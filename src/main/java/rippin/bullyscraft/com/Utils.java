@@ -1,10 +1,18 @@
 package rippin.bullyscraft.com;
 
+import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Utils {
@@ -30,4 +38,17 @@ public class Utils {
         return locs;
     }
 
+    public static void createRegion(Player player, Mission m, FactionsMissions plugin){
+    Selection sel = plugin.getWorldEdit().getSelection(player);
+        if (sel != null){
+            ProtectedRegion reg = new ProtectedCuboidRegion("Mission_" + m.getName(), new BlockVector(sel.getNativeMinimumPoint()), new BlockVector(sel.getNativeMaximumPoint()));
+            HashMap<Flag<?>, Object> flags = new HashMap<Flag<?>, Object>();
+            flags.put(new StateFlag("tnt", false), StateFlag.State.DENY);
+            reg.setFlags(flags);
+            plugin.getWorldGuard().getRegionManager(player.getWorld()).addRegion(reg);
+        }
+        else {
+            player.sendMessage(ChatColor.RED + "Selection is null.");
+        }
+    }
 }

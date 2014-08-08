@@ -3,6 +3,7 @@ package rippin.bullyscraft.com;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 
@@ -13,7 +14,7 @@ public class MissionListeners implements Listener {
     public MissionListeners(FactionsMissions plugin){
         this.plugin = plugin;
     }
-
+    @EventHandler
     public void onEntityDeath(EntityDeathEvent event){
         String uuid = event.getEntity().getUniqueId().toString();
         List<Mission> activeMissions = MissionManager.getActiveMissions();

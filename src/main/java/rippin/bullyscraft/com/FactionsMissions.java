@@ -5,6 +5,7 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import rippin.bullyscraft.com.Configs.Config;
+import rippin.bullyscraft.com.Configs.ConfigManager;
 
 import java.util.logging.Logger;
 
@@ -15,12 +16,18 @@ public class FactionsMissions extends JavaPlugin{
     @Override
     public void onEnable() {
     instance = this;
+    ConfigManager.generateConfigs(this);
+    MobsManager.loadMissions(this);
+    MissionManager.loadMissions(this);
     new StartMissionCountdown(this, Config.getConfig().getInt("Mission-Delay"));
+    this.getCommand("bullymission").setExecutor(new MissionCommands(this));
+    getServer().getPluginManager().registerEvents(new MissionListeners(this), this);
     }
 
     @Override
     public void onDisable() {
-    instance = null;
+       MissionManager.endActiveMissions();
+       instance = null;
     }
 
     public WorldGuardPlugin getWorldGuard() {

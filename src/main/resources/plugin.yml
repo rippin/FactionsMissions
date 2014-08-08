@@ -1,0 +1,7 @@
+main: rippin.bullyscraft.com.FactionsMissions
+author: RlPN/Rippin
+version: 0.1
+description: Missions for BullysCraft.
+
+commands:
+  bullymission:

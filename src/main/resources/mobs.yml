@@ -1,0 +1,13 @@
+#Mobs: Mob configuration.
+#Weapon ITEM:QUANTITY NAME:name_space ENCHANT:Sharpness@5 Lore:lore|lore_lore | = space _ = new line
+#Armor LEATHER_HELMET ENCHANT@LEVEL LEATHERCOLOR
+Mobs:
+  SuperZombie:
+    Important: false
+    Health: 25
+    DisplayName: ''
+    Weapon:
+    Armor:
+    -
+    Potions:
+    -

@@ -50,6 +50,7 @@ public class Mission {
             pasteSchematic(schematic);
             spawnCustomEntities();
             spawnImportantEntities();
+            setUUIDSToConfig();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (WorldEditException e) {
@@ -68,6 +69,9 @@ public class Mission {
         } catch (WorldEditException e) {
             e.printStackTrace();
         }
+     if (!MissionManager.getQueuedMissions().contains(this)){
+         MissionManager.getQueuedMissions().add(this);
+     }
      this.status = MissionStatus.INACTIVE;
     }
 
@@ -114,9 +118,9 @@ public class Mission {
         }
         schematicLoc = Utils.parseLoc(MissionsConfig.getConfig().getString("Missions." + name + ".Schematic-Location"));
         if (schematicLoc != null) {
-        missionRegion = plugin.getWorldGuard().getRegionManager(schematicLoc.getWorld()).getRegion(name);
+        missionRegion = plugin.getWorldGuard().getRegionManager(schematicLoc.getWorld()).getRegion("Mission_" + name);
         if (missionRegion == null){
-            System.out.println("Region for " + name + "does not exist select a region with WE wand and do /setregion name");
+            System.out.println("Region for " + name + "does not exist select a region with WE wand and do /bullymission setRegion name");
             holder.add("Region");
         }
         }
@@ -297,6 +301,7 @@ public class Mission {
             e.remove();
         }
       }
+        removeUUIDSConfig();
    }
 
     public void giveRewards(Player p){
@@ -304,5 +309,13 @@ public class Mission {
             s = s.replace("%player%", p.getName());
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), s);
         }
+    }
+    public void setUUIDSToConfig(){
+        MissionsConfig.getConfig().set("Missions." + name + "Custom-Entities-UUIDS", customEntitiesUUID);
+        MissionsConfig.getConfig().set("Missions." + name + "Important-Entities-UUIDS", importantEntitiesUUID);
+    }
+    public void removeUUIDSConfig(){
+        MissionsConfig.getConfig().set("Missions." + name + "Custom-Entities-UUIDS", null);
+        MissionsConfig.getConfig().set("Missions." + name + "Important-Entities-UUIDS", null);
     }
 }

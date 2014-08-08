@@ -103,4 +103,29 @@ public class MissionManager {
         }
         return false;
     }
+    public static Mission getMission(String s){
+        for (Mission m : getAllMissions()){
+            if (m.getName().equalsIgnoreCase(s)){
+                return  m;
+            }
+        }
+        return null;
+    }
+    public static void setMissionSpawnsToConfig(Mission m){
+        List<String> strings = new ArrayList<String>();
+        for (Location loc : m.getSpawns()){
+            strings.add(Utils.serializeLoc(loc));
+        }
+        MissionsConfig.getConfig().set("Missions." + m.getName() + ".Spawns", strings);
+        MissionsConfig.saveFile();
+    }
+    public static void setImportantEntityToConfig(Mission m, String key){
+
+    }
+
+    public static void endActiveMissions(){
+        for (Mission m : getActiveMissions()){
+            m.end();
+        }
+    }
 }

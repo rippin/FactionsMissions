@@ -30,6 +30,9 @@ public class StartMissionCountdown {
                  double z = m.getSchematicLoc().getZ();
                     Bukkit.broadcastMessage(broadcastMessage.replace("%name%", m.getName())
                             .replace("%type%", m.getType().getValue()).replace("%coords%", "X: " + x + "Y: " + y + "Z: " + z));
+                    if (MissionManager.getQueuedMissions().contains(m)){
+                        MissionManager.getQueuedMissions().remove(m);
+                    }
                     delay = saveDelay;
                 }
                 --delay;

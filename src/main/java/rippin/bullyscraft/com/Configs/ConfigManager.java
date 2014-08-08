@@ -6,7 +6,8 @@ import rippin.bullyscraft.com.FactionsMissions;
 import java.io.File;
 
 public class ConfigManager {
-    public static void generateCOnfigs(FactionsMissions plugin){
+
+    public static void generateConfigs(FactionsMissions plugin){
     Config.setUp(plugin);
     MissionsConfig.setUp(plugin);
     MobsConfig.setUp(plugin);

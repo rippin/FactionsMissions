@@ -14,7 +14,7 @@ import java.util.*;
 
 public class ParseItems {
 
-    //Example LEATHER_HELMET ENCHANT@LEVEL LEATHERCOLO
+    //Example LEATHER_HELMET ENCHANT@LEVEL LEATHERCOLOR
     public static List<ItemStack> getArmor(List<String> items){
         if (items == null){
             return null;
