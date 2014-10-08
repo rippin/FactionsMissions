@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import rippin.bullyscraft.com.Configs.MissionsConfig;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -15,21 +16,23 @@ public class MissionManager {
     private static List<Mission> missions = new ArrayList<Mission>();
     private static WorldGuardPlugin worldGuard = FactionsMissions.instance.getWorldGuard();
     private static List<Mission> queuedMissions = new ArrayList<Mission>();
+    private static List<Mission> activeMissions = new ArrayList<Mission>();
 
     public static void loadMissions(FactionsMissions plugin){
+       missions.clear();
         for (String key : MissionsConfig.getConfig().getConfigurationSection("Missions").getKeys(false)){
             Mission m = new Mission(key);
-            m.loadMissionData();
             getAllMissions().add(m);
             plugin.logger.info(m.getName() + " mission has been loaded from file");
 
         }
+
     }
     public static List<String> getPlayersInAnyMissionRegion(){  // by uuid
     List<String> players = new ArrayList<String>();
     for (Player p : Bukkit.getOnlinePlayers()){
         Location l = p.getLocation();
-        for (Mission m : getAllMissions()){
+        for (Mission m : getActiveMissions()){
         if (m.isLocationInMissionRegion(l)){
             players.add(p.getUniqueId().toString());
           }
@@ -43,13 +46,7 @@ public class MissionManager {
     }
 
     public static List<Mission> getActiveMissions(){
-        List<Mission> active = new ArrayList<Mission>();
-        for (Mission m : missions){
-            if (m.getStatus() == MissionStatus.ACTIVE){
-              active.add(m);
-            }
-        }
-        return active;
+        return activeMissions;
     }
 
 
@@ -103,6 +100,22 @@ public class MissionManager {
         }
         return false;
     }
+    public static boolean isQueuedMission(String s){
+        for (Mission m : getQueuedMissions()){
+            if (m.getName().equalsIgnoreCase(s)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public static boolean isActiveMission(String s){
+        for (Mission m : getActiveMissions()){
+            if (m.getName().equalsIgnoreCase(s)){
+                return true;
+            }
+        }
+        return false;
+    }
     public static Mission getMission(String s){
         for (Mission m : getAllMissions()){
             if (m.getName().equalsIgnoreCase(s)){
@@ -120,12 +133,77 @@ public class MissionManager {
         MissionsConfig.saveFile();
     }
     public static void setImportantEntityToConfig(Mission m, String key){
-
+        m.getImportantEntities();
+        MissionsConfig.getConfig().set("Missions." + m.getName() + ".Important-Entities." + key + ".Location", Utils.serializeLoc(m.getImportantEntities().get(key)));
+        MissionsConfig.saveFile();
     }
 
     public static void endActiveMissions(){
         for (Mission m : getActiveMissions()){
             m.end();
+        }
+    }
+    public static Mission isPlayerInActiveRegion(Location loc){
+        for (Mission m : getActiveMissions()){
+            if (m.isLocationInMissionRegion(loc)) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    public static boolean containsMission(List<Mission> missions, String mission){
+       for (Mission m : missions){
+           if (m.getName().equalsIgnoreCase(mission)){
+               return true;
+           }
+       }
+        return false;
+    }
+
+    public static void removeMission(List<Mission> missions, String mission){
+        Iterator<Mission> it = missions.iterator();
+        while (it.hasNext()){
+            if (it.next().getName().equalsIgnoreCase(mission)){
+                it.remove();
+            }
+        }
+    }
+
+
+    public static void addActiveToConfig(Mission m){
+       List<String> active = MissionsConfig.getConfig().getStringList("Active-Missions");
+       if (active == null){
+       active = new ArrayList<String>();
+       }
+       if (!active.contains(m.getName())){
+           active.add(m.getName());
+       }
+        MissionsConfig.getConfig().set("Active-Missions", active);
+        MissionsConfig.saveFile();
+    }
+
+    public static void removeActiveToConfig(Mission m){
+        List<String> active = MissionsConfig.getConfig().getStringList("Active-Missions");
+        if (active == null){
+            active = new ArrayList<String>();
+        }
+        if (active.contains(m.getName())){
+            active.remove(m.getName());
+        }
+        MissionsConfig.getConfig().set("Active-Missions", active);
+        MissionsConfig.saveFile();
+    }
+    public static void revertMissionsIfCrashed(){
+        List<String> active = MissionsConfig.getConfig().getStringList("Active-Missions");
+        if (active != null || !active.isEmpty()){
+           for (String s : active){
+               Mission m = getMission(s);
+               if (m != null) {
+                m.end();
+               System.out.println("Force reverting mission after crash. Mission:  " + m.getName());
+               }
+           }
         }
     }
 }

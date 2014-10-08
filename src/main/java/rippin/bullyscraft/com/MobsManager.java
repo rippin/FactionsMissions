@@ -11,7 +11,8 @@ import java.util.List;
 public class MobsManager {
     private static List<Mob> mobs = new ArrayList<Mob>();
 
-    public static void loadMissions(FactionsMissions plugin){
+    public static void loadMobs(FactionsMissions plugin){
+        mobs.clear();
         for (String key : MobsConfig.getConfig().getConfigurationSection("Mobs").getKeys(false)){
             Mob m = new Mob(key);
             mobs.add(m);

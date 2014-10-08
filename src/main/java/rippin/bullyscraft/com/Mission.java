@@ -34,9 +34,9 @@ public class Mission {
     private HashMap<String, Location> importantEntities = new HashMap<String, Location>(); //important entites have specific locations.
     private WorldEdit worldEdit;
     private FactionsMissions plugin;
+    private String enterMessage;
 
     public Mission(String name){
-    MissionManager.getQueuedMissions().remove(this);
     this.name = name;
     plugin = FactionsMissions.instance;
     worldEdit = plugin.getWorldEdit().getWorldEdit();
@@ -51,6 +51,13 @@ public class Mission {
             spawnCustomEntities();
             spawnImportantEntities();
             setUUIDSToConfig();
+            if (!MissionManager.containsMission(MissionManager.getActiveMissions(), this.getName())){
+                MissionManager.getActiveMissions().add(this);
+                MissionManager.addActiveToConfig(this);
+             }
+            if (MissionManager.containsMission(MissionManager.getQueuedMissions(), this.getName())){
+               MissionManager.removeMission(MissionManager.getQueuedMissions(), this.getName());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (WorldEditException e) {
@@ -63,13 +70,16 @@ public class Mission {
         try {
             pasteSchematic(revertSchematic);
             deleteEntities();
-
+            if (MissionManager.containsMission(MissionManager.getActiveMissions(), this.getName())){
+                MissionManager.removeMission(MissionManager.getActiveMissions(), this.getName());
+                MissionManager.removeActiveToConfig(this);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (WorldEditException e) {
             e.printStackTrace();
         }
-     if (!MissionManager.getQueuedMissions().contains(this)){
+     if (!MissionManager.containsMission(MissionManager.getActiveMissions(), this.getName())){
          MissionManager.getQueuedMissions().add(this);
      }
      this.status = MissionStatus.INACTIVE;
@@ -94,16 +104,23 @@ public class Mission {
     public void loadMissionData(){
         List<String> holder= new ArrayList<String>();
         String schematicName = MissionsConfig.getConfig().getString("Missions." + name + ".Schematic");
+        if (schematicName != null) {
         schematic = new File (plugin.getDataFolder().getAbsolutePath() + File.separator + "schematics" + File.separator, schematicName);
-       if (!schematic.exists()){
+       if (schematic == null ||!schematic.exists()){
            System.out.println("Mission schematic for " + name + " does not exist. Create one and put in schematics folder.");
         holder.add("schematic");
-       }
+            }
+        }
+        enterMessage = MissionsConfig.getConfig().getString("Missions." + name + ".Enter-Message");
+
        String revertSchematicName = MissionsConfig.getConfig().getString("Missions." + name + ".Revert-Schematic");
+        if (revertSchematicName != null) {
         revertSchematic = new File (plugin.getDataFolder().getAbsolutePath() + File.separator + "schematics" + File.separator, revertSchematicName);
-        if (!revertSchematic.exists()){
+        if (revertSchematic == null || !revertSchematic.exists()){
             System.out.println("Revert schematic for " + name + " does not exist. Create one and put in schematics folder.");
             holder.add("Revert");
+            }
+
         }
         rewards = MissionsConfig.getConfig().getStringList("Missions." + name + ".Rewards");
         if (rewards == null || rewards.isEmpty()){
@@ -116,10 +133,13 @@ public class Mission {
             System.out.println("Spawns for " + name + "do not exist do /setspawn [name] to set a spawn ");
             holder.add("spawn");
         }
+        if (MissionsConfig.getConfig().getString("Missions." + name + ".Schematic-Location") != null)
         schematicLoc = Utils.parseLoc(MissionsConfig.getConfig().getString("Missions." + name + ".Schematic-Location"));
         if (schematicLoc != null) {
-        missionRegion = plugin.getWorldGuard().getRegionManager(schematicLoc.getWorld()).getRegion("Mission_" + name);
-        if (missionRegion == null){
+            if (plugin.getWorldGuard().getRegionManager(schematicLoc.getWorld()).getRegion("Mission_" + name) != null) {
+            missionRegion = plugin.getWorldGuard().getRegionManager(schematicLoc.getWorld()).getRegion("Mission_" + name);
+         }
+       if (missionRegion == null){
             System.out.println("Region for " + name + "does not exist select a region with WE wand and do /bullymission setRegion name");
             holder.add("Region");
         }
@@ -134,8 +154,8 @@ public class Mission {
             System.out.println("Custom entities for " + name + " is empty / null.");
             holder.add("CustomEntities");
         }
-        importantEntities = partseImportatantEntites();
-        if (importantEntities == null){
+        importantEntities = parseImportatantEntites();
+        if (importantEntities == null || importantEntities.isEmpty()){
            System.out.println("Custom entities for " + name + " is empty/null");
         }
 
@@ -190,6 +210,8 @@ public class Mission {
 
     public void setSchematicLoc(Location schematicLoc) {
         this.schematicLoc = schematicLoc;
+        MissionsConfig.getConfig().set("Missions." + name + ".Schematic-Location", Utils.serializeLoc(schematicLoc));
+        MissionsConfig.saveFile();
     }
 
     public ProtectedRegion getMissionRegion() {
@@ -240,12 +262,15 @@ public class Mission {
         this.importantEntities = importantEntities;
     }
 
-    private HashMap<String, Location> partseImportatantEntites(){
-        HashMap<String, Location> imp = new HashMap<String, Location>();
+    public String getEnterMessage(){ return enterMessage; }
 
+    private HashMap<String, Location> parseImportatantEntites(){
+        HashMap<String, Location> imp = new HashMap<String, Location>();
+        if (MissionsConfig.getConfig().getConfigurationSection("Missions." + name + ".Important-Entities") != null) {
         for (String key : MissionsConfig.getConfig().getConfigurationSection("Missions." + name + ".Important-Entities").getKeys(false)) {
           String s = MissionsConfig.getConfig().getString("Missions." + name + ".Important-Entities." + key + ".Location");
            imp.put(key, Utils.parseLoc(s));
+            }
         }
         return  imp;
     }
@@ -311,11 +336,13 @@ public class Mission {
         }
     }
     public void setUUIDSToConfig(){
-        MissionsConfig.getConfig().set("Missions." + name + "Custom-Entities-UUIDS", customEntitiesUUID);
-        MissionsConfig.getConfig().set("Missions." + name + "Important-Entities-UUIDS", importantEntitiesUUID);
+        MissionsConfig.getConfig().set("Missions." + name + ".Custom-Entities-UUIDS", customEntitiesUUID);
+        MissionsConfig.getConfig().set("Missions." + name + ".Important-Entities-UUIDS", importantEntitiesUUID);
+        MissionsConfig.saveFile();
     }
     public void removeUUIDSConfig(){
-        MissionsConfig.getConfig().set("Missions." + name + "Custom-Entities-UUIDS", null);
-        MissionsConfig.getConfig().set("Missions." + name + "Important-Entities-UUIDS", null);
+        MissionsConfig.getConfig().set("Missions." + name + ".Custom-Entities-UUIDS", null);
+        MissionsConfig.getConfig().set("Missions." + name + ".Important-Entities-UUIDS", null);
+        MissionsConfig.saveFile();
     }
 }

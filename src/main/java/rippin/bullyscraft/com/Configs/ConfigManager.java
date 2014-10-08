@@ -13,5 +13,9 @@ public class ConfigManager {
     MobsConfig.setUp(plugin);
     new File(plugin.getDataFolder() + File.separator + "schematics" + File.separator).mkdir();
     }
-
+    public static void reloadConfigs(){
+        Config.reload();
+        MissionsConfig.reload();
+        MobsConfig.reload();
+    }
 }

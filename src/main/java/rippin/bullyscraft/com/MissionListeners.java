@@ -2,10 +2,13 @@ package rippin.bullyscraft.com;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 
 import java.util.List;
 
@@ -28,20 +31,92 @@ public class MissionListeners implements Listener {
                     m.getImportantEntitiesUUID().remove(uuid);
                     event.getDrops().clear();
                 }
-                if (m.getType() == MissionType.ELIMINATE){
-                    MissionManager.messagePlayersInMission(m, "&aA mob has been killed, " + m.getCustomEntitiesUUID().size() + m.getImportantEntitiesUUID().size() + " mobs remain.");
-                    if ((m.getCustomEntitiesUUID().size() + m.getImportantEntitiesUUID().size()) == 0){
+                if (m.getType() == MissionType.ELIMINATE || m.getType() == MissionType.SPY){
+                    int totalEnts = (m.getCustomEntitiesUUID().size() + m.getImportantEntitiesUUID().size());
+                    MissionManager.messagePlayersInMission(m,Utils.prefix +  "&aA mob has been killed, " + totalEnts  + " mobs remain.");
+                    if (totalEnts == 0){
                        if (event.getEntity().getKiller() instanceof Player){
+                           final Mission finalMission = m;
                            Player p = event.getEntity().getKiller();
-                           p.sendMessage(ChatColor.GOLD + "You have killed the last mob in the " + m.getType().getValue() + " you will now receive rewards.");
+                           p.sendMessage(ChatColor.GOLD + "You have killed the last mob in the " + m.getName() + " you will now receive rewards.");
                            m.giveRewards(p);
-                           Bukkit.broadcastMessage("Players have eliminated all mobs from an eliminate mission.");
-
+                           Bukkit.broadcastMessage(Utils.prefix + "Players have eliminated all mobs from " + m.getName() + " mission.");
+                           MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
+                                   "reverted in 3 minutes, please leave to prevent suffocation damage.");
+                           plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+                               @Override
+                               public void run() {
+                                   finalMission.end();
+                               }
+                           },1200L);
                        }
 
                     }
                 }
             }
+        }
+    }
+    //spy mission
+    @EventHandler
+    public void onEntityDamage(EntityDamageByEntityEvent event){
+        if (event.getEntity() instanceof Player && !(event.getDamager() instanceof Player)){
+        List<Mission> activeMissions = MissionManager.getActiveMissions();
+            for (Mission m : activeMissions){
+              if (m.getType() == MissionType.SPY && m.getStatus() != MissionStatus.ENDING) {
+                if (event.getDamager() instanceof Projectile){
+                    if (((Projectile) event.getDamager()).getShooter() instanceof LivingEntity) {
+                    LivingEntity shooter = (LivingEntity) ((Projectile) event.getDamager()).getShooter();
+                    if (m.getCustomEntitiesUUID().contains(shooter.getUniqueId().toString())
+                            || m.getImportantEntitiesUUID().contains(shooter.getUniqueId().toString())){
+                        final Mission finalMission = m;
+                        Bukkit.broadcastMessage(Utils.prefix + ((Player) event.getEntity()).getName() + " was damaged and spy mission " + m.getName()
+                                + " was failed.");
+                        MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
+                                "reverted in 3 minutes, please leave to prevent suffocation damage.");
+                        plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+                            @Override
+                            public void run() {
+                                MissionManager.messagePlayersInMission(finalMission, "&4Rolling back area now, you were warned...");
+                                finalMission.end();
+                                return;
+                            }
+                        },1200L);
+                     }
+                   }
+                }
+                 else if (m.getCustomEntitiesUUID().contains(event.getDamager().getUniqueId().toString())
+                        || m.getImportantEntitiesUUID().contains(event.getDamager().getUniqueId().toString())){
+                    final Mission finalMission = m;
+                    m.setStatus(MissionStatus.ENDING);
+                    Bukkit.broadcastMessage(Utils.prefix + ((Player) event.getEntity()).getName() + " was damaged and spy mission " + m.getName()
+                    + " was failed.");
+                    MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
+                            "reverted in 3 minutes, please leave to prevent suffocation damage.");
+                    plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+                        @Override
+                        public void run() {
+                            MissionManager.messagePlayersInMission(finalMission, "&4Rolling back area now, you were warned...");
+                            finalMission.end();
+                            return;
+                        }
+                    },1200L);
+                }
+              }
+            }
+        }
+    }
+
+    @EventHandler (priority = EventPriority.MONITOR)
+    public void onMove(PlayerMoveEvent event){
+        if (event.getTo() != event.getFrom()){
+           Mission to = MissionManager.isPlayerInActiveRegion(event.getTo());
+            Mission from = MissionManager.isPlayerInActiveRegion(event.getFrom());
+             if (from == null && to != null){
+                if (to.getEnterMessage() != null){
+                event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Utils.prefix + to.getEnterMessage()));
+
+                }
+             }
         }
     }
 

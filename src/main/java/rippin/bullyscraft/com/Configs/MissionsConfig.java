@@ -3,6 +3,7 @@ package rippin.bullyscraft.com.Configs;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import rippin.bullyscraft.com.FactionsMissions;
+import rippin.bullyscraft.com.MissionManager;
 
 import java.io.*;
 
@@ -71,5 +72,6 @@ public class MissionsConfig {
     }
     public static void reload(){
         config = YamlConfiguration.loadConfiguration(configFile);
+        MissionManager.loadMissions(plugin);
     }
 }

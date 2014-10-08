@@ -17,16 +17,16 @@ public class FactionsMissions extends JavaPlugin{
     public void onEnable() {
     instance = this;
     ConfigManager.generateConfigs(this);
-    MobsManager.loadMissions(this);
+    MobsManager.loadMobs(this);
     MissionManager.loadMissions(this);
-    new StartMissionCountdown(this, Config.getConfig().getInt("Mission-Delay"));
+    MissionManager.revertMissionsIfCrashed();
+    new StartMissionCountdown(this, Config.getConfig().getInt("Mission-Delay")).startCountdown();
     this.getCommand("bullymission").setExecutor(new MissionCommands(this));
     getServer().getPluginManager().registerEvents(new MissionListeners(this), this);
     }
 
     @Override
     public void onDisable() {
-       MissionManager.endActiveMissions();
        instance = null;
     }
 

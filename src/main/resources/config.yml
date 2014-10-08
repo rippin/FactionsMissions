@@ -1,1 +1,2 @@
-Mission-Delay:              #Delay Missions have to start in seconds.
+Mission-Delay: 3600
+BroadcastMessage: 'Test message.'

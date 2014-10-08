@@ -3,6 +3,7 @@ package rippin.bullyscraft.com.Configs;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import rippin.bullyscraft.com.FactionsMissions;
+import rippin.bullyscraft.com.MobsManager;
 
 import java.io.*;
 
@@ -26,7 +27,7 @@ public class MobsConfig {
             try {
                 plugin.getDataFolder().mkdir();
                 getFile().createNewFile();
-                copy(plugin.getResource("mobsyml"), configFile);
+                copy(plugin.getResource("mobs.yml"), configFile);
                 reload(); //reload yml just in case
 
                 saveFile(getFile(), getConfig());
@@ -71,5 +72,6 @@ public class MobsConfig {
     }
     public static void reload(){
         config = YamlConfiguration.loadConfiguration(configFile);
+        MobsManager.loadMobs(plugin);
     }
 }
