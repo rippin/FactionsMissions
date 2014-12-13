@@ -4,6 +4,7 @@
 Mobs:
   SuperZombie:
     Important: false
+    Important-Health-Bar: false
     Health: 25
     DisplayName: ''
     Weapon:

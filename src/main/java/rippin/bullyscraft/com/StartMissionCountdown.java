@@ -22,7 +22,8 @@ public class StartMissionCountdown {
         plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
             @Override
             public void run() {
-                if (delay == 0 && Bukkit.getOnlinePlayers().size() > 0) {
+                //announce messages soon?
+                if (delay == 0 && Bukkit.getOnlinePlayers().length > 0) {
                     if (MissionManager.getQueuedMissions().size() == 0) {
                         delay = saveDelay;
                     } else {

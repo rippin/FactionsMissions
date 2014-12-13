@@ -25,6 +25,7 @@ public class MissionCommands implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "/bullymission setImportantEntity [mission] [mob]");
                 sender.sendMessage(ChatColor.RED + "/bullymission setRegion [mission]");
                 sender.sendMessage(ChatColor.RED + "/bullymission forceStartMission [mission]");
+                    sender.sendMessage(ChatColor.RED + "/bullymission forceEndMission [mission]");
                     sender.sendMessage(ChatColor.RED + "/bullymission setSchematicLoc [mission]");
                 }
                 else {

@@ -8,10 +8,14 @@ import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.data.DataException;
 import com.sk89q.worldedit.schematic.SchematicFormat;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import me.confuser.barapi.BarAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import rippin.bullyscraft.com.Configs.MissionsConfig;
 
 import java.io.File;
@@ -32,9 +36,12 @@ public class Mission {
     private List<String> customEntitiesUUID = new ArrayList<String>();
     private List<String> importantEntitiesUUID = new ArrayList<String>();
     private HashMap<String, Location> importantEntities = new HashMap<String, Location>(); //important entites have specific locations.
+    private Map<LivingEntity, String> importantBarEntities = new HashMap<LivingEntity, String>();
     private WorldEdit worldEdit;
     private FactionsMissions plugin;
     private String enterMessage;
+    private List<Player> nearbyPlayers = new ArrayList<Player>();
+    private BukkitTask task;
 
     public Mission(String name){
     this.name = name;
@@ -63,6 +70,7 @@ public class Mission {
         } catch (WorldEditException e) {
             e.printStackTrace();
         }
+        runBarRepeatingTask(); //Run repeating bar task
     }
 
     public void end(){
@@ -81,6 +89,15 @@ public class Mission {
         }
      if (!MissionManager.containsMission(MissionManager.getActiveMissions(), this.getName())){
          MissionManager.getQueuedMissions().add(this);
+     }
+     //Just in case
+     getCustomEntitiesUUID().clear();
+     getImportantEntities().clear();
+     getImportantBarEntities().clear();
+     removeBar(); // Remove boss bar
+        //cancel repeating task
+        if (task != null) {
+        task.cancel();
      }
      this.status = MissionStatus.INACTIVE;
     }
@@ -280,6 +297,7 @@ public class Mission {
     public List<String> getImportantEntitiesUUID(){
         return  importantEntitiesUUID;
     }
+    public Map<LivingEntity, String> getImportantBarEntities() { return importantBarEntities; }
 
     public void spawnCustomEntities(){
         List<Location> l = new ArrayList<Location>(spawns);
@@ -344,5 +362,48 @@ public class Mission {
         MissionsConfig.getConfig().set("Missions." + name + ".Custom-Entities-UUIDS", null);
         MissionsConfig.getConfig().set("Missions." + name + ".Important-Entities-UUIDS", null);
         MissionsConfig.saveFile();
+    }
+
+    public List<Player> setBarForNearbyPlayers(LivingEntity entity, String name){
+        for (Player player : nearbyPlayers){
+            BarAPI.removeBar(player);
+        }
+        nearbyPlayers.clear();
+        List<Entity> ents = entity.getNearbyEntities(10.0, 10.0, 10.0);
+        if (!ents.isEmpty()) {
+        for (Entity ent : ents){
+            if (ent instanceof Player){
+                nearbyPlayers.add((Player)ent);
+                float percentage = (float)((entity.getHealth() / entity.getMaxHealth())* 100);
+                BarAPI.setMessage((Player)ent,name,percentage);
+            }
+        }
+       }
+        return nearbyPlayers;
+    }
+
+    public void updateBarHealth(LivingEntity ent){
+        for (Player player : nearbyPlayers){
+            float percentage = (float)((ent.getHealth() / ent.getMaxHealth())* 100);
+            BarAPI.setHealth(player, percentage);
+        }
+    }
+    public void removeBar(){
+        for (Player p: nearbyPlayers){
+            BarAPI.removeBar(p);
+        }
+    }
+
+    private void runBarRepeatingTask(){
+        task = plugin.getServer().getScheduler().runTaskTimer(plugin, new BukkitRunnable() {
+            @Override
+            public void run() {
+                Iterator it = importantBarEntities.entrySet().iterator();
+                while (it.hasNext()){
+                    Map.Entry<LivingEntity, String> ents = (Map.Entry<LivingEntity, String>) it.next();
+                    setBarForNearbyPlayers(ents.getKey(), ents.getValue());
+                }
+            }
+        },5L, 100L);
     }
 }

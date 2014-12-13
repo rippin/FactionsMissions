@@ -10,7 +10,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
-import java.util.List;
+import java.util.*;
 
 public class MissionListeners implements Listener {
     private FactionsMissions plugin;
@@ -29,11 +29,12 @@ public class MissionListeners implements Listener {
                 }
                 else if(m.getImportantEntitiesUUID().contains(uuid)) {
                     m.getImportantEntitiesUUID().remove(uuid);
+                    removeImportantBarEntities(m,uuid);
                     event.getDrops().clear();
                 }
                 if (m.getType() == MissionType.ELIMINATE || m.getType() == MissionType.SPY){
                     int totalEnts = (m.getCustomEntitiesUUID().size() + m.getImportantEntitiesUUID().size());
-                    MissionManager.messagePlayersInMission(m,Utils.prefix +  "&aA mob has been killed, " + totalEnts  + " mobs remain.");
+                    MissionManager.messagePlayersInMission(m, Utils.prefix + "&aA mob has been killed, " + totalEnts + " mobs remain.");
                     if (totalEnts == 0){
                        if (event.getEntity().getKiller() instanceof Player){
                            final Mission finalMission = m;
@@ -59,11 +60,29 @@ public class MissionListeners implements Listener {
     //spy mission
     @EventHandler
     public void onEntityDamage(EntityDamageByEntityEvent event){
-        if (event.getEntity() instanceof Player && !(event.getDamager() instanceof Player)){
+        // DO MOB BAR CODE
+        if (event.getEntity() instanceof LivingEntity){
+            List<Mission> activeMissions = MissionManager.getActiveMissions();
+            if (!activeMissions.isEmpty()) {
+            for (Mission m : activeMissions){
+                Map<LivingEntity, String> mobbarents = m.getImportantBarEntities();
+                for (LivingEntity mob : mobbarents.keySet()){
+
+                }
+            }
+          }
+        }
+        /*
+
+                    END BAR CODE
+         */
+        else if (event.getEntity() instanceof Player && !(event.getDamager() instanceof Player)){
         List<Mission> activeMissions = MissionManager.getActiveMissions();
             for (Mission m : activeMissions){
-              if (m.getType() == MissionType.SPY && m.getStatus() != MissionStatus.ENDING) {
-                if (event.getDamager() instanceof Projectile){
+                //Spy mission code
+                if (m.getType() == MissionType.SPY && m.getStatus() != MissionStatus.ENDING) {
+                    //arrow code
+                    if (event.getDamager() instanceof Projectile){
                     if (((Projectile) event.getDamager()).getShooter() instanceof LivingEntity) {
                     LivingEntity shooter = (LivingEntity) ((Projectile) event.getDamager()).getShooter();
                     if (m.getCustomEntitiesUUID().contains(shooter.getUniqueId().toString())
@@ -84,6 +103,7 @@ public class MissionListeners implements Listener {
                      }
                    }
                 }
+                    //regular damage code
                  else if (m.getCustomEntitiesUUID().contains(event.getDamager().getUniqueId().toString())
                         || m.getImportantEntitiesUUID().contains(event.getDamager().getUniqueId().toString())){
                     final Mission finalMission = m;
@@ -117,6 +137,17 @@ public class MissionListeners implements Listener {
 
                 }
              }
+        }
+    }
+
+    public void removeImportantBarEntities(Mission m, String uuid){
+        Iterator it  = m.getImportantBarEntities().entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<LivingEntity, String> entry = (Map.Entry<LivingEntity, String>)it.next();
+                if (entry.getKey().getUniqueId() == UUID.fromString(uuid)){
+                it.remove();
+                m.removeBar();
+            }
         }
     }
 

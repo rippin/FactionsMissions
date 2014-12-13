@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -30,6 +31,7 @@ public class Mob {
     private FactionsMissions plugin;
     private String type;
     private String vehicle;
+    private boolean importantBar = false;
     public Mob(String name){
         this.name = name;
         plugin = FactionsMissions.instance;
@@ -51,6 +53,9 @@ public class Mob {
         if (config.getBoolean("Mobs." + name + ".Important") != false){
             importantMob = true;
         }
+        if (config.getBoolean("Mobs." + name + ".Important-Health-Bar") != false){
+            importantBar = true;
+        }
         if (config.getString("Mobs." + name + ".Type") != null)
             type = config.getString("Mobs." + name + ".Type");
         if (config.getString("Mobs." + name + ".Vehicle") != null){
@@ -59,7 +64,8 @@ public class Mob {
     }
 
     public LivingEntity spawnMob(Location loc, Mission m, String metadata){
-     if (type == null){
+
+        if (type == null){
          System.out.println("Failed to spawn because type is null");
              return null;
 
@@ -88,11 +94,19 @@ public class Mob {
                 Mob veh = MobsManager.getMob(vehicle);
                 LivingEntity entVeh = veh.spawnMob(loc, m, metadata);
                 entVeh.setPassenger(ent);
+
             }
             else {
                 try {
                 if (EntityType.valueOf(vehicle) != null){
                     Entity e = Bukkit.getWorld(loc.getWorld().getName()).spawnEntity(loc, EntityType.valueOf(vehicle));
+                    if (e instanceof Horse){
+                        if (config.getString("Mobs." + name + ".HorseType") != null){
+                           //dont bother checking just take string.
+                            Horse.Variant variant = Horse.Variant.valueOf(config.getString("Mobs." + name + ".HorseType"));
+                            ((Horse) e).setVariant(variant);
+                        }
+                    }
                     e.setPassenger(ent);
                 }
                 } catch (IllegalArgumentException ex){
@@ -108,6 +122,9 @@ public class Mob {
         }
         else if (metadata.equalsIgnoreCase("ImportantEntity")){
             m.getImportantEntitiesUUID().add(ent.getUniqueId().toString());
+            if (importantBar) {
+            m.getImportantBarEntities().put(ent, getName());
+            }
         }
         return ent;
     }
@@ -152,4 +169,6 @@ public class Mob {
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
+    public boolean isImportantMob() { return  importantMob; }
+    public boolean isImportantBar() { return  importantBar; }
 }
