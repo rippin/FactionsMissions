@@ -8,6 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 import java.util.*;
@@ -20,9 +21,8 @@ public class MissionListeners implements Listener {
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event){
         String uuid = event.getEntity().getUniqueId().toString();
-        List<Mission> activeMissions = MissionManager.getActiveMissions();
-        if (!activeMissions.isEmpty()){
-            for (Mission m : activeMissions){
+        Mission m = MissionManager.getMobMission(uuid);
+                if (m != null) {
                 if (m.getCustomEntitiesUUID().contains(uuid)){
                     m.getCustomEntitiesUUID().remove(uuid);
                     event.getDrops().clear();
@@ -56,7 +56,7 @@ public class MissionListeners implements Listener {
                 }
             }
         }
-    }
+
     //spy mission
     @EventHandler
     public void onEntityDamage(EntityDamageByEntityEvent event){
@@ -64,13 +64,18 @@ public class MissionListeners implements Listener {
         if (event.getEntity() instanceof LivingEntity){
             List<Mission> activeMissions = MissionManager.getActiveMissions();
             if (!activeMissions.isEmpty()) {
-            for (Mission m : activeMissions){
-                Map<LivingEntity, String> mobbarents = m.getImportantBarEntities();
-                for (LivingEntity mob : mobbarents.keySet()){
-
+                String uuid = event.getEntity().getUniqueId().toString();
+                Mission m = MissionManager.getMobMission(uuid);
+                if (m != null) {
+                    Map<LivingEntity, String> mobbarents = m.getImportantBarEntities();
+                    for (LivingEntity mob : mobbarents.keySet()){
+                        if (mob.getUniqueId().toString().equalsIgnoreCase(uuid)){
+                            m.updateBarHealth(mob);
+                        }
+                    }
                 }
             }
-          }
+            //do regain health too
         }
         /*
 
@@ -125,11 +130,29 @@ public class MissionListeners implements Listener {
             }
         }
     }
-
+    @EventHandler
+    public void onRegainHealth(EntityRegainHealthEvent event){
+        if (!(event.getEntity() instanceof  Player)){
+            List<Mission> activeMissions = MissionManager.getActiveMissions();
+            if (!activeMissions.isEmpty()) {
+                String uuid = event.getEntity().getUniqueId().toString();
+                Mission m = MissionManager.getMobMission(uuid);
+                if (m != null) {
+                    Map<LivingEntity, String> mobbarents = m.getImportantBarEntities();
+                    for (LivingEntity mob : mobbarents.keySet()){
+                        if (mob.getUniqueId().toString().equalsIgnoreCase(uuid)){
+                            m.updateBarHealth(mob);
+                        }
+                    }
+                }
+            }
+        }
+    }
     @EventHandler (priority = EventPriority.MONITOR)
     public void onMove(PlayerMoveEvent event){
         if (event.getTo() != event.getFrom()){
-           Mission to = MissionManager.isPlayerInActiveRegion(event.getTo());
+           if (!MissionManager.getActiveMissions().isEmpty()) {
+            Mission to = MissionManager.isPlayerInActiveRegion(event.getTo());
             Mission from = MissionManager.isPlayerInActiveRegion(event.getFrom());
              if (from == null && to != null){
                 if (to.getEnterMessage() != null){
@@ -138,15 +161,17 @@ public class MissionListeners implements Listener {
                 }
              }
         }
+       }
     }
 
     public void removeImportantBarEntities(Mission m, String uuid){
         Iterator it  = m.getImportantBarEntities().entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<LivingEntity, String> entry = (Map.Entry<LivingEntity, String>)it.next();
-                if (entry.getKey().getUniqueId() == UUID.fromString(uuid)){
+                if (entry.getKey().getUniqueId().toString().equalsIgnoreCase(uuid)){
                 it.remove();
                 m.removeBar();
+                m.cancelBarTask();
             }
         }
     }

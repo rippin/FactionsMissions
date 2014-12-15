@@ -44,11 +44,11 @@ public class Mission {
     private BukkitTask task;
 
     public Mission(String name){
-    this.name = name;
-    plugin = FactionsMissions.instance;
-    worldEdit = plugin.getWorldEdit().getWorldEdit();
-    this.status = MissionStatus.INACTIVE;
-    loadMissionData();
+        this.name = name;
+        plugin = FactionsMissions.instance;
+        worldEdit = plugin.getWorldEdit().getWorldEdit();
+        this.status = MissionStatus.INACTIVE;
+        loadMissionData();
     }
 
     public void start(){
@@ -405,5 +405,8 @@ public class Mission {
                 }
             }
         },5L, 100L);
+    }
+    public void cancelBarTask(){
+        task.cancel();
     }
 }

@@ -206,4 +206,13 @@ public class MissionManager {
            }
         }
     }
+
+    public static Mission getMobMission(String uuid){
+        for (Mission m : getActiveMissions()){
+            if (m.getCustomEntitiesUUID().contains(uuid) || m.getImportantEntitiesUUID().contains(uuid)){
+                return m;
+            }
+        }
+        return null;
+    }
 }

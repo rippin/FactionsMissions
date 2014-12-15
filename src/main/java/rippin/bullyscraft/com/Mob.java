@@ -85,7 +85,7 @@ public class Mob {
           ent.setCustomName(ChatColor.translateAlternateColorCodes('&', displayName));
           ent.setCustomNameVisible(true);
       }
-        if (health != 0){
+        if (health >= 0){
             ent.setMaxHealth(health);
             ent.setHealth(health);
         }
@@ -117,15 +117,16 @@ public class Mob {
         ent.setCanPickupItems(false);
         ent.setMetadata(metadata, new FixedMetadataValue(plugin, m.getName()));
         ent.setRemoveWhenFarAway(false);
-        if (metadata.equalsIgnoreCase("CustomEntity")){
-            m.getCustomEntitiesUUID().add(ent.getUniqueId().toString());
-        }
-        else if (metadata.equalsIgnoreCase("ImportantEntity")){
+        if (importantMob) {
             m.getImportantEntitiesUUID().add(ent.getUniqueId().toString());
             if (importantBar) {
-            m.getImportantBarEntities().put(ent, getName());
+                m.getImportantBarEntities().put(ent, getName());
             }
         }
+        else{
+            m.getCustomEntitiesUUID().add(ent.getUniqueId().toString());
+        }
+
         return ent;
     }
 
