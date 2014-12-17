@@ -196,7 +196,7 @@ public class MissionManager {
     }
     public static void revertMissionsIfCrashed(){
         List<String> active = MissionsConfig.getConfig().getStringList("Active-Missions");
-        if (active != null || !active.isEmpty()){
+        if (active != null && !active.isEmpty()){
            for (String s : active){
                Mission m = getMission(s);
                if (m != null) {

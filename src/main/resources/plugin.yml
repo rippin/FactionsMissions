@@ -4,7 +4,7 @@ version: 0.1
 description: Missions for BullysCraft.
 name: FactionsMissions
 depend: [WorldEdit, WorldGuard]
-softdepend: [Clearlagg]
+softdepend: [Clearlagg, AsyncWorldEdit]
 commands:
   bullymission:
     usage: Bully Mission Command.

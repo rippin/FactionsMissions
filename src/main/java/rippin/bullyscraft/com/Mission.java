@@ -54,10 +54,7 @@ public class Mission {
     public void start(){
     this.status = MissionStatus.ACTIVE;
         try {
-            pasteSchematic(schematic);
-            spawnCustomEntities();
-            spawnImportantEntities();
-            setUUIDSToConfig();
+            pasteSchematic(schematic); //Mobs are now spawned in this method.
             if (!MissionManager.containsMission(MissionManager.getActiveMissions(), this.getName())){
                 MissionManager.getActiveMissions().add(this);
                 MissionManager.addActiveToConfig(this);
@@ -76,12 +73,10 @@ public class Mission {
     public void end(){
     this.status = MissionStatus.ENDING;
         try {
-            pasteSchematic(revertSchematic);
+            revertSchematic(revertSchematic);
             deleteEntities();
-            if (MissionManager.containsMission(MissionManager.getActiveMissions(), this.getName())){
                 MissionManager.removeMission(MissionManager.getActiveMissions(), this.getName());
                 MissionManager.removeActiveToConfig(this);
-            }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (WorldEditException e) {
@@ -99,7 +94,7 @@ public class Mission {
         if (task != null) {
         task.cancel();
      }
-     this.status = MissionStatus.INACTIVE;
+        this.status = MissionStatus.INACTIVE;
     }
 
     public void pasteSchematic(File schematic) throws IOException, WorldEditException {
@@ -108,12 +103,45 @@ public class Mission {
                 System.out.println("Schematic or WorlEdit is null.");
                 return;
             }
+            if (plugin.getAsyncWorldEdit() != null) {
+                AsyncWorldEditHook.revertHookPaste(plugin, this); // prevent dumb noclassdef exception
+            }
+            else {
             CuboidClipboard cc = SchematicFormat.MCEDIT.load(schematic);
 
             EditSession editSession = worldEdit.getEditSessionFactory().getEditSession(BukkitUtil.getLocalWorld(schematicLoc.getWorld()), -1);
             cc.paste(editSession, BukkitUtil.toVector(schematicLoc), false);
 
-        } catch (DataException e) {
+                spawnCustomEntities();
+                spawnImportantEntities();
+                setUUIDSToConfig();
+                // spawn mobs
+
+            }
+        }
+            catch (DataException e) {
+            throw new IOException("Failed to parse schematic file", e);
+        }
+    }
+
+    public void revertSchematic(File schematic) throws IOException, WorldEditException {
+        try {
+            if (schematic == null || worldEdit == null){
+                System.out.println("Schematic or WorlEdit is null.");
+                return;
+            }
+            if (plugin.getAsyncWorldEdit() != null) {
+                AsyncWorldEditHook.revertHookPaste(plugin, this); // prevent dumb noclassdef exception
+            }
+            else {
+                CuboidClipboard cc = SchematicFormat.MCEDIT.load(schematic);
+
+                EditSession editSession = worldEdit.getEditSessionFactory().getEditSession(BukkitUtil.getLocalWorld(schematicLoc.getWorld()), -1);
+                cc.paste(editSession, BukkitUtil.toVector(schematicLoc), false);
+
+            }
+        }
+        catch (DataException e) {
             throw new IOException("Failed to parse schematic file", e);
         }
     }

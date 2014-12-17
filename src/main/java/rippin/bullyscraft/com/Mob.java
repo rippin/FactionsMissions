@@ -85,7 +85,7 @@ public class Mob {
           ent.setCustomName(ChatColor.translateAlternateColorCodes('&', displayName));
           ent.setCustomNameVisible(true);
       }
-        if (health >= 0){
+            if (health > 0){
             ent.setMaxHealth(health);
             ent.setHealth(health);
         }

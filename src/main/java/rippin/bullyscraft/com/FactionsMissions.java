@@ -51,4 +51,15 @@ public class FactionsMissions extends JavaPlugin{
 
         return (WorldEditPlugin) plugin;
     }
+
+    public Plugin getAsyncWorldEdit() {
+        Plugin plugin = getServer().getPluginManager().getPlugin("AsyncWorldEdit");
+
+        // AsyncWorldEdit is not loaded.
+        if (plugin == null) {
+            return null; // Maybe you want throw an exception instead
+        }
+
+        return plugin;
+    }
 }
