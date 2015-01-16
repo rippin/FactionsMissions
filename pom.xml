@@ -9,29 +9,37 @@
     <version>1.0-SNAPSHOT</version>
     <repositories>
         <repository>
-            <id>bukkit-repo</id>
-            <url>http://repo.bukkit.org/content/groups/public/</url>
+            <id>spigot-repo</id>
+            <url>http://repo.md-5.net/content/groups/public/</url>
         </repository>
         <repository>
             <id>sk89q-repo</id>
             <url>http://maven.sk89q.com/repo/</url>
         </repository>
         <repository>
-            <id>confuser-repo</id>
-            <url>http://ci.frostcast.net/plugin/repository/everything</url>
+            <id>thirdparty</id>
+            <url>http://168.235.64.202:8069/nexus/content/repositories/thirdparty/</url>
         </repository>
     </repositories>
     <dependencies>
-    <dependency>
-        <groupId>org.bukkit</groupId>
-        <artifactId>bukkit</artifactId>
-        <version>LATEST</version>
-        <scope>provided</scope>
-    </dependency>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.7.10-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spigot</groupId>
+            <artifactId>spigot.jar</artifactId>
+            <version>1.7.10</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>me.confuser</groupId>
             <artifactId>BarAPI</artifactId>
             <version>3.2</version>
+            <scope>provided</scope>
+            <type>jar</type>
         </dependency>
     <dependency>
         <groupId>com.sk89q</groupId>
@@ -43,16 +51,9 @@
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldedit</artifactId>
-            <version>5.6.3</version>
+            <version>LATEST</version>
             <scope>provided</scope>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>craftbukkit</artifactId>
-            <systemPath>${project.basedir}/.idea/lib/craftbukkit.jar</systemPath>
-            <version>LATEST</version>
-            <scope>system</scope>
         </dependency>
         <dependency>
             <groupId>org.primesoft</groupId>
@@ -89,12 +90,10 @@
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
+
                         </goals>
                         <configuration>
                             <artifactSet>
-                                <includes>
-                                    <include>me.confuser:*</include>
-                                </includes>
                                 <excludes>
                                     <exclude>**/*.java</exclude>
                                     <exclude>.git</exclude>

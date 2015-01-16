@@ -7,4 +7,4 @@ depend: [WorldEdit, WorldGuard]
 softdepend: [Clearlagg, AsyncWorldEdit]
 commands:
   bullymission:
-    usage: Bully Mission Command.
+    usage: Command for Bully Mission.

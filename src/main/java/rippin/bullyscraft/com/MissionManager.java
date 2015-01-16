@@ -3,8 +3,10 @@ import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import rippin.bullyscraft.com.Configs.Config;
 import rippin.bullyscraft.com.Configs.MissionsConfig;
 
 import java.util.ArrayList;
@@ -17,15 +19,22 @@ public class MissionManager {
     private static WorldGuardPlugin worldGuard = FactionsMissions.instance.getWorldGuard();
     private static List<Mission> queuedMissions = new ArrayList<Mission>();
     private static List<Mission> activeMissions = new ArrayList<Mission>();
+    private static List<String> revertMissions = MissionsConfig.getConfig().getStringList("Active-Missions");
+    private static boolean pasteSchematic = Config.getConfig().getBoolean("Paste-Schematics");
 
     public static void loadMissions(FactionsMissions plugin){
-       missions.clear();
+
+        missions.clear();
+    //    try {
         for (String key : MissionsConfig.getConfig().getConfigurationSection("Missions").getKeys(false)){
             Mission m = new Mission(key);
             getAllMissions().add(m);
             plugin.logger.info(m.getName() + " mission has been loaded from file");
 
         }
+  //     } catch (NullPointerException e){
+  //          System.out.println("No missions loaded.");
+  //      }
 
     }
     public static List<String> getPlayersInAnyMissionRegion(){  // by uuid
@@ -195,15 +204,12 @@ public class MissionManager {
         MissionsConfig.saveFile();
     }
     public static void revertMissionsIfCrashed(){
-        List<String> active = MissionsConfig.getConfig().getStringList("Active-Missions");
-        if (active != null && !active.isEmpty()){
-           for (String s : active){
+           for (String s : revertMissions){
                Mission m = getMission(s);
                if (m != null) {
                 m.end();
                System.out.println("Force reverting mission after crash. Mission:  " + m.getName());
                }
-           }
         }
     }
 
@@ -214,5 +220,28 @@ public class MissionManager {
             }
         }
         return null;
+    }
+    public static List<String> getRevertMissions(){
+        return  revertMissions;
+    }
+
+    public static  boolean pasteSchematic(){
+        return pasteSchematic;
+    }
+
+    public static void loadChunksinRegion(Mission m){
+            int minX = m.getMissionRegion().getMinimumPoint().getBlockX();
+            int minZ = m.getMissionRegion().getMinimumPoint().getBlockZ();
+
+            int maxX = m.getMissionRegion().getMaximumPoint().getBlockX();
+            int maxZ = m.getMissionRegion().getMaximumPoint().getBlockZ();
+
+            for (int x = minX; x <=maxX; x+=16){
+                for (int z = minZ; z <= maxZ; z+=16){
+                    Location loc = new Location(m.getWorld(), x, 0.0, z);
+                    Chunk chunk = m.getWorld().getChunkAt(loc);
+                    chunk.load();
+                }
+            }
     }
 }

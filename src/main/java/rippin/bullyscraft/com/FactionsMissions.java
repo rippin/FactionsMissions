@@ -19,10 +19,19 @@ public class FactionsMissions extends JavaPlugin{
     ConfigManager.generateConfigs(this);
     MobsManager.loadMobs(this);
     MissionManager.loadMissions(this);
-    MissionManager.revertMissionsIfCrashed();
-    new StartMissionCountdown(this, Config.getConfig().getInt("Mission-Delay")).startCountdown();
     this.getCommand("bullymission").setExecutor(new MissionCommands(this));
     getServer().getPluginManager().registerEvents(new MissionListeners(this), this);
+       //check if you want to paste the schcematics
+
+        this.getServer().getScheduler().runTaskLater(this, new Runnable() {
+        @Override
+        public void run() {
+        MissionManager.revertMissionsIfCrashed();
+               }
+    }, 200L);
+        if (Config.getConfig().getInt("Mission-Delay") > 0 && Config.getConfig().getBoolean("Mission-Task")) {
+        new StartMissionCountdown(this, Config.getConfig().getInt("Mission-Delay")).startCountdown();
+        }
     }
 
     @Override

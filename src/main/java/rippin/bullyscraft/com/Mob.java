@@ -4,10 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Horse;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.*;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -32,6 +30,7 @@ public class Mob {
     private String type;
     private String vehicle;
     private boolean importantBar = false;
+    private String secondForm;
     public Mob(String name){
         this.name = name;
         plugin = FactionsMissions.instance;
@@ -61,6 +60,9 @@ public class Mob {
         if (config.getString("Mobs." + name + ".Vehicle") != null){
             this.vehicle = config.getString("Mobs." + name + ".Vehicle");
         }
+        if (config.getString("Mobs." + name + ".SecondForm") != null){
+           secondForm = config.getString("Mobs." + name + ".SecondForm");
+        }
     }
 
     public LivingEntity spawnMob(Location loc, Mission m, String metadata){
@@ -71,6 +73,13 @@ public class Mob {
 
          }
         LivingEntity ent = (LivingEntity) Bukkit.getServer().getWorld(loc.getWorld().getName()).spawnEntity(loc, EntityType.valueOf(type));
+
+        if (ent instanceof Zombie){
+            Zombie s = (Zombie) ent;
+            if (s.isBaby()){
+                s.setBaby(false);
+            }
+        }
         EntityEquipment ee = ent.getEquipment();
      if (weapon != null){
          ee.setItemInHand(weapon);
@@ -88,6 +97,10 @@ public class Mob {
             if (health > 0){
             ent.setMaxHealth(health);
             ent.setHealth(health);
+        }
+        if (secondForm != null){
+               m.getSecondFormMap().put(ent.getUniqueId().toString(), secondForm);
+
         }
         if (vehicle != null){
             if (MobsManager.containsMob(vehicle)){
@@ -117,6 +130,8 @@ public class Mob {
         ent.setCanPickupItems(false);
         ent.setMetadata(metadata, new FixedMetadataValue(plugin, m.getName()));
         ent.setRemoveWhenFarAway(false);
+        CreatureSpawnEvent event = new CreatureSpawnEvent(ent, CreatureSpawnEvent.SpawnReason.CUSTOM);
+        Bukkit.getServer().getPluginManager().callEvent(event);
         if (importantMob) {
             m.getImportantEntitiesUUID().add(ent.getUniqueId().toString());
             if (importantBar) {

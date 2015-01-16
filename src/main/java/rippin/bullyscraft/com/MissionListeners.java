@@ -1,20 +1,33 @@
 package rippin.bullyscraft.com;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.inventory.meta.FireworkEffectMeta;
+import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
+import rippin.bullyscraft.com.Configs.MissionsConfig;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 
 public class MissionListeners implements Listener {
     private FactionsMissions plugin;
+    private int taskID;
+    private int cicleTaskid;
+    private int bossTaskID;
+    private int blockTask;
     public MissionListeners(FactionsMissions plugin){
         this.plugin = plugin;
     }
@@ -22,16 +35,41 @@ public class MissionListeners implements Listener {
     public void onEntityDeath(EntityDeathEvent event){
         String uuid = event.getEntity().getUniqueId().toString();
         Mission m = MissionManager.getMobMission(uuid);
-                if (m != null) {
-                if (m.getCustomEntitiesUUID().contains(uuid)){
+
+        if (m != null) {
+
+            // Second Form spawning
+            if (m.getSecondFormMap().size() > 0){
+                Iterator it = m.getSecondFormMap().entrySet().iterator();
+                while (it.hasNext()){
+                    Map.Entry<String, String> entry = (Map.Entry<String,String>) it.next();
+                    if (MobsManager.getMob(entry.getValue()) != null && uuid.equalsIgnoreCase(entry.getKey())){
+
+                        String spawnThis = entry.getValue();
+
+                        Mob mob = MobsManager.getMob(spawnThis);
+                        if (entry.getValue().equalsIgnoreCase(mob.getName())) {
+                            spawnSecondForm(m, mob,event.getEntity().getLocation()); //
+                            MissionsConfig.saveFile();
+                            break;
+                        }
+                    }
+                }
+            }
+            //END SECOND FORM
+
+            if (m.getCustomEntitiesUUID().contains(uuid)){
                     m.getCustomEntitiesUUID().remove(uuid);
-                    event.getDrops().clear();
+                event.getDrops().clear();
+
                 }
                 else if(m.getImportantEntitiesUUID().contains(uuid)) {
                     m.getImportantEntitiesUUID().remove(uuid);
                     removeImportantBarEntities(m,uuid);
                     event.getDrops().clear();
+
                 }
+                //remove uuid
                 if (m.getType() == MissionType.ELIMINATE || m.getType() == MissionType.SPY){
                     int totalEnts = (m.getCustomEntitiesUUID().size() + m.getImportantEntitiesUUID().size());
                     MissionManager.messagePlayersInMission(m, Utils.prefix + "&aA mob has been killed, " + totalEnts + " mobs remain.");
@@ -41,17 +79,28 @@ public class MissionListeners implements Listener {
                            Player p = event.getEntity().getKiller();
                            p.sendMessage(ChatColor.GOLD + "You have killed the last mob in the " + m.getName() + " you will now receive rewards.");
                            m.giveRewards(p);
-                           Bukkit.broadcastMessage(Utils.prefix + "Players have eliminated all mobs from " + m.getName() + " mission.");
+                           Bukkit.broadcastMessage(Utils.prefix + "Players have eliminated all mobs from the " + m.getName() + " mission.");
+                           if (MissionManager.pasteSchematic()) {
                            MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
                                    "reverted in 3 minutes, please leave to prevent suffocation damage.");
-                           plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-                               @Override
-                               public void run() {
-                                   finalMission.end();
-                               }
-                           },1200L);
+                               plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+                                   @Override
+                                   public void run() {
+                                       finalMission.end();
+                                   }
+                               },1200L);
+                           }
+                           else {
+                               finalMission.end();
+                           }
                        }
 
+                        Firework fw = (Firework) event.getEntity().getWorld().spawnEntity(event.getEntity().getLocation(), EntityType.FIREWORK);
+                        FireworkMeta meta = fw.getFireworkMeta();
+                        FireworkEffect effect = FireworkEffect.builder().withColor(Color.RED, Color.GRAY).trail(true).with(FireworkEffect.Type.STAR).build();
+                        meta.addEffect(effect);
+                        meta.setPower(10);
+                        fw.setFireworkMeta(meta);
                     }
                 }
             }
@@ -60,8 +109,34 @@ public class MissionListeners implements Listener {
     //spy mission
     @EventHandler
     public void onEntityDamage(EntityDamageByEntityEvent event){
+        if (event.getCause() == EntityDamageEvent.DamageCause.CUSTOM && (event.getEntity() instanceof Player)){
+            if (event.getDamager() instanceof FallingBlock){
+                if (event.getDamager().hasMetadata("ICE-BOSS")){
+                    Player player = (Player) event.getEntity();
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 140, 0), false);
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 140, 0), false);
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 140, 0), false);
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.HARM, 80, 0), false);
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 100, 4), false);
+
+                    return;
+                }
+            }
+        }
+
+        if(event.getDamager() instanceof  Snowball && event.getEntity() instanceof  LivingEntity){
+            if (!MissionManager.getActiveMissions().isEmpty()){
+                if (event.getDamager().hasMetadata("ICE-BOSS")){
+                    event.setDamage(15);
+
+                    LivingEntity damaged = (LivingEntity) event.getEntity();
+                    damaged.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 100, 0), false);
+                }
+            }
+        }
+
         // DO MOB BAR CODE
-        if (event.getEntity() instanceof LivingEntity){
+    if (event.getEntity() instanceof LivingEntity){
             List<Mission> activeMissions = MissionManager.getActiveMissions();
             if (!activeMissions.isEmpty()) {
                 String uuid = event.getEntity().getUniqueId().toString();
@@ -75,7 +150,18 @@ public class MissionListeners implements Listener {
                     }
                 }
             }
-            //do regain health too
+        }
+        else if ((!(event.getEntity() instanceof  Player)) && event.getDamager() instanceof  LivingEntity){
+            List<Mission> activeMissions = MissionManager.getActiveMissions();
+            if (!activeMissions.isEmpty()){
+                String uuid1 = event.getEntity().getUniqueId().toString();
+                String uuid2 = event.getEntity().getUniqueId().toString();
+                Mission m1 = MissionManager.getMobMission(uuid1);
+                Mission m2 = MissionManager.getMobMission(uuid2);
+                if (m1 != null || m2 != null){
+                    event.setCancelled(true);
+                }
+            }
         }
         /*
 
@@ -172,6 +258,145 @@ public class MissionListeners implements Listener {
                 it.remove();
                 m.removeBar();
                 m.cancelBarTask();
+            }
+        }
+    }
+
+    public void spawnSecondForm(final Mission m, final Mob mob, final Location loc){
+    final String world = loc.getWorld().getName();
+        taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+            int i = 40;
+            @Override
+            public void run() {
+
+                if (i > 0) {
+                    Bukkit.getWorld(world).playEffect(loc, Effect.MOBSPAWNER_FLAMES, 10);
+                    Bukkit.getWorld(world).playSound(loc, Sound.ENDERDRAGON_HIT, 10F, 1F);
+                    }
+                else{
+                    Bukkit.getWorld(world).playSound(loc, Sound.ENDERDRAGON_GROWL, 10F, 1F);
+                     mob.spawnMob(loc, m, "ImportantEntity");
+                    Bukkit.getScheduler().cancelTask(taskID);
+                }
+                --i;
+            }
+        },1L, 5L);
+        circleLoc(loc, 5, 6, Effect.MOBSPAWNER_FLAMES);
+}
+    public void circleLoc(final Location loc, int r, int height, final Effect effect){
+    double x;
+    double z;
+    int y = (int) loc.getY();
+        final List<Location> locs = new ArrayList<Location>();
+        for (int yy = y; yy <= (height+y); yy++) {
+          for (double i = 0.0; i < 360.0; i+=15){
+            double angle = (i* Math.PI / 180);
+            x = (loc.getX() + r * Math.cos(angle));
+            z = (loc.getZ() + r * Math.sin(angle));
+           Location newLoc = new Location(loc.getWorld(),x, (0.5+yy), z);
+             locs.add(newLoc);
+         }
+       }
+
+               cicleTaskid = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+                   int i = 0;
+                    @Override
+                    public void run() {
+                        if (i < locs.size()) {
+                        Bukkit.getWorld(loc.getWorld().getName()).playEffect(locs.get(i), effect, 10);
+                        }
+                        else {
+                            Bukkit.getScheduler().cancelTask(cicleTaskid);
+                        }
+                        ++i;
+                    }
+                },1L, 1L);
+
+    }
+
+
+    @EventHandler
+    public void chunkUnload(ChunkUnloadEvent event){
+        if (!MissionManager.getActiveMissions().isEmpty() || (MissionManager.getRevertMissions() != null && !MissionManager.getRevertMissions().isEmpty())){
+            for (Mission m : MissionManager.getActiveMissions()){
+                int minX = (int) m.getMissionRegion().getMinimumPoint().getX();
+                int minZ = (int) m.getMissionRegion().getMinimumPoint().getZ();
+
+                int maxX = (int) m.getMissionRegion().getMaximumPoint().getX();
+                int maxZ = (int) m.getMissionRegion().getMaximumPoint().getZ();
+
+                if (m.getWorld().getName().equalsIgnoreCase(event.getWorld().getName())) {
+                if (event.getChunk().getX() >= minX && event.getChunk().getX() <= maxX && event.getChunk().getZ() >= minZ
+                        && event.getChunk().getZ() <= maxZ){
+                     event.setCancelled(true);
+                }
+
+            }
+           }
+        }
+    }
+    @EventHandler
+    public void onSpawn(CreatureSpawnEvent event){
+        final Entity entity = event.getEntity();
+        if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.CUSTOM){
+            if (MissionManager.getAllMissions() != null && !MissionManager.getAllMissions().isEmpty()){
+                for (Mission m : MissionManager.getAllMissions()){
+                  if  (m.isLocationInMissionRegion(event.getLocation())){
+                      event.setCancelled(true);
+                  }
+                }
+            }
+        }
+
+        if (event.getEntity().getCustomName() == null) { return; }
+        if (event.getEntity().getCustomName().toLowerCase().contains("iceboss")){
+            bossTaskID =   plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    if (entity != null && !entity.isDead()){
+                        iceBossMethod(entity);
+                    }
+                    else {
+                       Bukkit.getScheduler().cancelTask(bossTaskID);
+                    }
+                }
+            },1L, 40L);
+        }
+    }
+
+    public void iceBossMethod(Entity entity){
+       List<Entity> ents = entity.getNearbyEntities(30, 12, 30);
+       for (Entity ent : ents){
+           if (ent instanceof  Player){
+               Location loc = entity.getLocation().add(0, 2.1, 0).clone();
+
+               Vector to = ent.getLocation().add(0, 1, 0).toVector().clone();
+               Vector from = loc.toVector().clone();
+               Vector vel = to.subtract(from).normalize();
+/*
+               Entity entity1 = loc.getWorld().spawnEntity(loc, EntityType.SNOWBALL);
+               entity1.setVelocity(vel.multiply(1));
+                       entity1.setPassenger(block);
+*/
+               FallingBlock block = loc.getWorld().spawnFallingBlock(loc, Material.ICE, (byte) 0);
+               block.setVelocity(vel.multiply(2.5));
+               block.setMetadata("ICE-BOSS", new FixedMetadataValue(plugin,""));
+               new FallingBlockCollideCountdown(plugin, block).startCountdown();
+
+           }
+       }
+    }
+    @EventHandler
+    public void blockStateChange(final EntityChangeBlockEvent event){
+        if (event.getEntity() instanceof  FallingBlock){
+            FallingBlock block = (FallingBlock) event.getEntity();
+            if (block.hasMetadata("ICE-BOSS")){
+                plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                         event.getBlock().setType(Material.AIR);
+                    }
+                }, 80L);
             }
         }
     }

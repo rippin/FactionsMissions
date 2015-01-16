@@ -23,17 +23,17 @@ public class StartMissionCountdown {
             @Override
             public void run() {
                 //announce messages soon?
-                if (delay == 0 && Bukkit.getOnlinePlayers().length > 0) {
+                if (delay == 0 && Bukkit.getOnlinePlayers().size() > 0) {
                     if (MissionManager.getQueuedMissions().size() == 0) {
                         delay = saveDelay;
                     } else {
                         Mission m = MissionManager.getRandomQueuedMission();
                         m.start();
-                        double x = m.getSchematicLoc().getX();
-                        double y = m.getSchematicLoc().getY();
-                        double z = m.getSchematicLoc().getZ();
+                        Double x = m.getSchematicLoc().getX();
+                        Double y = m.getSchematicLoc().getY();
+                        Double z = m.getSchematicLoc().getZ();
                         Bukkit.broadcastMessage(broadcastMessage.replace("%name%", m.getName())
-                                .replace("%type%", m.getType().getValue()).replace("%coords%", "X: " + (int) x + " Y: " + (int) y + " Z: " + (int) z));
+                                .replace("%type%", m.getType().getValue()).replace("%coords%", "X: " + x.intValue() + " Y: " + y.intValue() + " Z: " + z.intValue()));
                         delay = saveDelay;
                     }
                 }

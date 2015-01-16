@@ -4,17 +4,21 @@ import com.sk89q.worldedit.CuboidClipboard;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitUtil;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.data.DataException;
 import com.sk89q.worldedit.schematic.SchematicFormat;
-import org.primesoft.asyncworldedit.PluginMain;
+import com.sk89q.worldedit.world.World;
+import org.primesoft.asyncworldedit.AsyncWorldEditMain;
+import org.primesoft.asyncworldedit.PlayerEntry;
 import org.primesoft.asyncworldedit.blockPlacer.BlockPlacer;
-import org.primesoft.asyncworldedit.blockPlacer.BlockPlacerJobEntry;
 import org.primesoft.asyncworldedit.blockPlacer.IBlockPlacerListener;
 import org.primesoft.asyncworldedit.blockPlacer.IJobEntryListener;
+import org.primesoft.asyncworldedit.blockPlacer.entries.JobEntry;
 import org.primesoft.asyncworldedit.worldedit.AsyncCuboidClipboard;
 import org.primesoft.asyncworldedit.worldedit.AsyncEditSession;
 import org.primesoft.asyncworldedit.worldedit.AsyncEditSessionFactory;
+import org.primesoft.asyncworldedit.worldedit.ThreadSafeEditSession;
 
 import java.io.IOException;
 
@@ -23,88 +27,83 @@ import java.io.IOException;
  */
 public class AsyncWorldEditHook {
 
-    public static void AWEHookPaste(FactionsMissions plugin, final Mission m) throws WorldEditException, IOException, DataException{
-        PluginMain asyncWorldEdit = (PluginMain) plugin.getAsyncWorldEdit();
+    public static void AWEHookPaste(FactionsMissions plugin, final Mission m) throws WorldEditException, IOException, DataException {
+        AsyncWorldEditMain asyncWorldEdit = (AsyncWorldEditMain) plugin.getAsyncWorldEdit();
         WorldEdit worldEdit = plugin.getWorldEdit().getWorldEdit();
-        String playerName = plugin.getServer().getConsoleSender().getName();
+        final String playerName = plugin.getServer().getConsoleSender().getName();
 
         AsyncEditSessionFactory fac = (AsyncEditSessionFactory) worldEdit.getEditSessionFactory();
         BlockPlacer bPlacer = asyncWorldEdit.getBlockPlacer();
-        final int jobID = bPlacer.getJobId(playerName);
 
-
-        final IJobEntryListener stateListener = new IJobEntryListener() {
-            public void jobStateChanged(BlockPlacerJobEntry job) {
+      final IJobEntryListener stateListener = new IJobEntryListener() {
+            public void jobStateChanged(JobEntry job) {
                 if (job.isTaskDone()) {
-                    if (job.getJobId() == jobID)
-                        System.out.println("done here");
+                    PlayerEntry playerEntry = job.getPlayer();
+                    if (playerEntry.isUnknown()){
+                        if (job.getName().equalsIgnoreCase("place")) {
+                       m.spawnCustomEntities();
+                       m.spawnImportantEntities();
+                       m.setUUIDSToConfig();
+                        }
+                    }
                 }
             }
         };
 
         final IBlockPlacerListener listener = new IBlockPlacerListener() {
-            public void jobAdded(BlockPlacerJobEntry job) {
+            public void jobAdded(JobEntry job) {
                 job.addStateChangedListener(stateListener);
 
             }
-            public void jobRemoved(BlockPlacerJobEntry job) {
+            public void jobRemoved(JobEntry job) {
                 job.removeStateChangedListener(stateListener);
-                if (job.isTaskDone()) {
-                    if (jobID == job.getJobId()) {
-                        m.spawnCustomEntities();
-                        m.spawnImportantEntities();
-                        m.setUUIDSToConfig();
-                        System.out.println("Removed and DONE SPAWNED");
-                    }
-                }
             }
         };
-        bPlacer.addListener(listener);
-        AsyncEditSession session = (AsyncEditSession) fac.getEditSession(BukkitUtil.getLocalWorld(m.getSchematicLoc().getWorld()), -1);
+        ThreadSafeEditSession session = (ThreadSafeEditSession) fac.getEditSession(new BukkitWorld(m.getSchematicLoc().getWorld()), -1);
         CuboidClipboard cc = SchematicFormat.MCEDIT.load(m.getSchematic());
-        AsyncCuboidClipboard clip =  new AsyncCuboidClipboard(playerName, cc);
+        AsyncCuboidClipboard clip =  new AsyncCuboidClipboard(session.getPlayer(), cc);
+        bPlacer.addListener(listener);
         clip.paste(session, BukkitUtil.toVector(m.getSchematicLoc()), false);
 
 
     }
 
-    public static void revertHookPaste(FactionsMissions plugin, final Mission m) throws WorldEditException, IOException, DataException{
-        PluginMain asyncWorldEdit = (PluginMain) plugin.getAsyncWorldEdit();
+
+    public static void revertHookPaste(FactionsMissions plugin, final Mission m) throws WorldEditException, IOException, DataException {
+        AsyncWorldEditMain asyncWorldEdit = (AsyncWorldEditMain) plugin.getAsyncWorldEdit();
         WorldEdit worldEdit = plugin.getWorldEdit().getWorldEdit();
-        String playerName = plugin.getServer().getConsoleSender().getName();
+
 
         AsyncEditSessionFactory fac = (AsyncEditSessionFactory) worldEdit.getEditSessionFactory();
         BlockPlacer bPlacer = asyncWorldEdit.getBlockPlacer();
-        final int jobID = bPlacer.getJobId(playerName);
-
 
         final IJobEntryListener stateListener = new IJobEntryListener() {
-            public void jobStateChanged(BlockPlacerJobEntry job) {
+            public void jobStateChanged(JobEntry job) {
                 if (job.isTaskDone()) {
-                    if (job.getJobId() == jobID)
-                        System.out.println("done here");
+                    PlayerEntry playerEntry = job.getPlayer();
+                    if (playerEntry.isUnknown()){
+                        if (job.getPlayer().isUnknown()) {
+                          System.out.println("Placed");
+                           MissionManager.getRevertMissions().remove(m.getName());
+                        }
+                    }
                 }
             }
         };
 
         final IBlockPlacerListener listener = new IBlockPlacerListener() {
-            public void jobAdded(BlockPlacerJobEntry job) {
+            public void jobAdded(JobEntry job) {
                 job.addStateChangedListener(stateListener);
 
             }
-            public void jobRemoved(BlockPlacerJobEntry job) {
+            public void jobRemoved(JobEntry job) {
                 job.removeStateChangedListener(stateListener);
-                if (job.isTaskDone()) {
-                    if (jobID == job.getJobId()) {
-                        System.out.println("Removed and DONE SPAWNED");
-                    }
-                }
             }
         };
+        ThreadSafeEditSession session = (ThreadSafeEditSession) fac.getEditSession(new BukkitWorld(m.getSchematicLoc().getWorld()), -1);
+        CuboidClipboard cc = SchematicFormat.MCEDIT.load(m.getRevertSchematic());
+        AsyncCuboidClipboard clip =  new AsyncCuboidClipboard(session.getPlayer(), cc);
         bPlacer.addListener(listener);
-        AsyncEditSession session = (AsyncEditSession) fac.getEditSession(BukkitUtil.getLocalWorld(m.getSchematicLoc().getWorld()), -1);
-        CuboidClipboard cc = SchematicFormat.MCEDIT.load(m.getSchematic());
-        AsyncCuboidClipboard clip =  new AsyncCuboidClipboard(playerName, cc);
         clip.paste(session, BukkitUtil.toVector(m.getSchematicLoc()), false);
 
 
