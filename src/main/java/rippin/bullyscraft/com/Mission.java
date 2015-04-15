@@ -39,6 +39,7 @@ public class Mission {
     private List<String> importantEntitiesUUID = new ArrayList<String>();
     private HashMap<String, Location> importantEntities = new HashMap<String, Location>(); //important entites have specific locations.
     private Map<LivingEntity, String> importantBarEntities = new HashMap<LivingEntity, String>();
+    private int timeMissionLength = 600;
     private Map<String, String> secondForm = new HashMap<String, String>();
     private WorldEdit worldEdit;
     private FactionsMissions plugin;
@@ -83,7 +84,10 @@ public class Mission {
         } catch (WorldEditException e) {
             e.printStackTrace();
         }
-        runBarRepeatingTask(); //Run repeating bar task
+       if (getType() == MissionType.TIME){
+           //run task here
+       }
+       // runBarRepeatingTask(); //Run repeating bar task
     }
 
         public void end(){
@@ -96,7 +100,7 @@ public class Mission {
                     getCustomEntitiesUUID().clear();
                     getImportantEntitiesUUID().clear();
                     getImportantBarEntities().clear();
-                    removeBar(); // Remove boss bar
+                   // removeBar(); // Remove boss bar
                 }
             }, 10L);
             //Just in case
@@ -182,7 +186,7 @@ public class Mission {
         }
 
         if (MissionsConfig.getConfig().getString("Missions." + getName() + ".MainPoint") != null){
-            mainPoint = Utils.parseLoc(MissionsConfig.getConfig().getString("Missions." + getName() + ".MainPoint"));
+            mainPoint = Utilss.parseLoc(MissionsConfig.getConfig().getString("Missions." + getName() + ".MainPoint"));
         }
         else {
             holder.add("1");
@@ -210,7 +214,7 @@ public class Mission {
         }
         //move dis above
         if (MissionsConfig.getConfig().getString("Missions." + name + ".Schematic-Location") != null)
-            schematicLoc = Utils.parseLoc(MissionsConfig.getConfig().getString("Missions." + name + ".Schematic-Location"));
+            schematicLoc = Utilss.parseLoc(MissionsConfig.getConfig().getString("Missions." + name + ".Schematic-Location"));
 
         enterMessage = MissionsConfig.getConfig().getString("Missions." + name + ".Enter-Message");
 
@@ -220,7 +224,7 @@ public class Mission {
         holder.add("rewards");
         }
 
-        spawns = Utils.getSpawns(MissionsConfig.getConfig().getStringList("Missions." + name + ".Spawns"));
+        spawns = Utilss.getSpawns(MissionsConfig.getConfig().getStringList("Missions." + name + ".Spawns"));
         if (spawns == null || spawns.isEmpty()){
             System.out.println("Spawns for " + name + "do not exist do /setspawn [name] to set a spawn ");
             holder.add("spawn");
@@ -237,6 +241,11 @@ public class Mission {
          }
         if (MissionsConfig.getConfig().getString("Missions." + name + ".Type") != null) {
         type = MissionType.valueOf(MissionsConfig.getConfig().getString("Missions." + name + ".Type"));
+            if (type == MissionType.TIME){
+                if (MissionsConfig.getConfig().getString("Missions." + name + ".Time-Length") != null) {
+                    timeMissionLength = MissionsConfig.getConfig().getInt("Missions." + name + ".Time-Length");
+                }
+            }
         }
         else {
            System.out.println("Mission type for " + name + " is null.");
@@ -306,7 +315,7 @@ public class Mission {
 
     public void setSchematicLoc(Location schematicLoc) {
         this.schematicLoc = schematicLoc;
-        MissionsConfig.getConfig().set("Missions." + name + ".Schematic-Location", Utils.serializeLoc(schematicLoc));
+        MissionsConfig.getConfig().set("Missions." + name + ".Schematic-Location", Utilss.serializeLoc(schematicLoc));
         MissionsConfig.saveFile();
     }
 
@@ -369,7 +378,7 @@ public class Mission {
         if (MissionsConfig.getConfig().getConfigurationSection("Missions." + name + ".Important-Entities") != null) {
         for (String key : MissionsConfig.getConfig().getConfigurationSection("Missions." + name + ".Important-Entities").getKeys(false)) {
           String s = MissionsConfig.getConfig().getString("Missions." + name + ".Important-Entities." + key + ".Location");
-           imp.put(key, Utils.parseLoc(s));
+           imp.put(key, Utilss.parseLoc(s));
             }
         }
         return  imp;

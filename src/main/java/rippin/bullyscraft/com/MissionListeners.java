@@ -7,8 +7,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
-import org.bukkit.inventory.meta.FireworkEffectMeta;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -27,16 +27,32 @@ public class MissionListeners implements Listener {
     private int taskID;
     private int cicleTaskid;
     private int bossTaskID;
-    private int blockTask;
+    private int fireworkTaskID;
     public MissionListeners(FactionsMissions plugin){
         this.plugin = plugin;
     }
     @EventHandler
-    public void onEntityDeath(EntityDeathEvent event){
+    public void onTeleport(PlayerTeleportEvent event){
+        if (!event.getFrom().getWorld().getName().equalsIgnoreCase(event.getTo().getWorld().getName())){
+            if (MissionManager.getMissionWorld().equalsIgnoreCase(event.getTo().getWorld().getName())){
+                event.getPlayer().sendMessage(MissionManager.getTeleportworldMessage());
+            }
+        }
+    }
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityDeath(final EntityDeathEvent event){
         String uuid = event.getEntity().getUniqueId().toString();
         Mission m = MissionManager.getMobMission(uuid);
-
-        if (m != null) {
+        if (m == null) {
+            if (MissionManager.getMissionWorld().equalsIgnoreCase(event.getEntity().getLocation().getWorld().getName())){
+                if (MobsManager.isInReplaceEntUUID(uuid)){
+                   Mob repl = MobsManager.removeReplaceEntUUID(uuid);
+                    event.getDrops().clear();
+                    event.getDrops().addAll(repl.getDrops());
+                }
+            }
+        }
+       else  {
 
             // Second Form spawning
             if (m.getSecondFormMap().size() > 0){
@@ -49,7 +65,8 @@ public class MissionListeners implements Listener {
 
                         Mob mob = MobsManager.getMob(spawnThis);
                         if (entry.getValue().equalsIgnoreCase(mob.getName())) {
-                            spawnSecondForm(m, mob,event.getEntity().getLocation()); //
+                            m.getCustomEntitiesUUID().add("placeholder");
+                            spawnSecondForm(m, mob, event.getEntity().getLocation()); //
                             MissionsConfig.saveFile();
                             break;
                         }
@@ -58,6 +75,8 @@ public class MissionListeners implements Listener {
             }
             //END SECOND FORM
 
+            //do drops
+            //remove uuid
             if (m.getCustomEntitiesUUID().contains(uuid)){
                     m.getCustomEntitiesUUID().remove(uuid);
                 event.getDrops().clear();
@@ -69,17 +88,17 @@ public class MissionListeners implements Listener {
                     event.getDrops().clear();
 
                 }
-                //remove uuid
+
                 if (m.getType() == MissionType.ELIMINATE || m.getType() == MissionType.SPY){
                     int totalEnts = (m.getCustomEntitiesUUID().size() + m.getImportantEntitiesUUID().size());
-                    MissionManager.messagePlayersInMission(m, Utils.prefix + "&aA mob has been killed, " + totalEnts + " mobs remain.");
+                    MissionManager.messagePlayersInMission(m, Utilss.prefix + "&aA mob has been killed, " + totalEnts + " mobs remain.");
                     if (totalEnts == 0){
                        if (event.getEntity().getKiller() instanceof Player){
                            final Mission finalMission = m;
                            Player p = event.getEntity().getKiller();
                            p.sendMessage(ChatColor.GOLD + "You have killed the last mob in the " + m.getName() + " you will now receive rewards.");
                            m.giveRewards(p);
-                           Bukkit.broadcastMessage(Utils.prefix + "Players have eliminated all mobs from the " + m.getName() + " mission.");
+                           Bukkit.broadcastMessage(Utilss.prefix + "Players have eliminated all mobs from the " + m.getName() + " mission.");
                            if (MissionManager.pasteSchematic()) {
                            MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
                                    "reverted in 3 minutes, please leave to prevent suffocation damage.");
@@ -94,13 +113,25 @@ public class MissionListeners implements Listener {
                                finalMission.end();
                            }
                        }
-
-                        Firework fw = (Firework) event.getEntity().getWorld().spawnEntity(event.getEntity().getLocation(), EntityType.FIREWORK);
-                        FireworkMeta meta = fw.getFireworkMeta();
-                        FireworkEffect effect = FireworkEffect.builder().withColor(Color.RED, Color.GRAY).trail(true).with(FireworkEffect.Type.STAR).build();
-                        meta.addEffect(effect);
-                        meta.setPower(10);
-                        fw.setFireworkMeta(meta);
+                       fireworkTaskID = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+                            int i = 10;
+                            @Override
+                            public void run() {
+                                if (i > 0) {
+                                Firework fw = (Firework) event.getEntity().getWorld().spawnEntity(event.getEntity().getLocation(), EntityType.FIREWORK);
+                                FireworkMeta meta = fw.getFireworkMeta();
+                                FireworkEffect effect = FireworkEffect.builder().withColor(Color.RED, Color.GRAY).trail(true).
+                                        withFade(Color.BLACK).with(FireworkEffect.Type.STAR).build();
+                                meta.addEffect(effect);
+                                meta.setPower(5);
+                                fw.setFireworkMeta(meta);
+                                }
+                                else {
+                                    Bukkit.getScheduler().cancelTask(fireworkTaskID);
+                                }
+                                --i;
+                               }
+                        },1L, 20L);
                     }
                 }
             }
@@ -136,6 +167,7 @@ public class MissionListeners implements Listener {
         }
 
         // DO MOB BAR CODE
+        /*
     if (event.getEntity() instanceof LivingEntity){
             List<Mission> activeMissions = MissionManager.getActiveMissions();
             if (!activeMissions.isEmpty()) {
@@ -163,6 +195,7 @@ public class MissionListeners implements Listener {
                 }
             }
         }
+        */
         /*
 
                     END BAR CODE
@@ -179,7 +212,7 @@ public class MissionListeners implements Listener {
                     if (m.getCustomEntitiesUUID().contains(shooter.getUniqueId().toString())
                             || m.getImportantEntitiesUUID().contains(shooter.getUniqueId().toString())){
                         final Mission finalMission = m;
-                        Bukkit.broadcastMessage(Utils.prefix + ((Player) event.getEntity()).getName() + " was damaged and spy mission " + m.getName()
+                        Bukkit.broadcastMessage(Utilss.prefix + ((Player) event.getEntity()).getName() + " was damaged and spy mission " + m.getName()
                                 + " was failed.");
                         MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
                                 "reverted in 3 minutes, please leave to prevent suffocation damage.");
@@ -199,7 +232,7 @@ public class MissionListeners implements Listener {
                         || m.getImportantEntitiesUUID().contains(event.getDamager().getUniqueId().toString())){
                     final Mission finalMission = m;
                     m.setStatus(MissionStatus.ENDING);
-                    Bukkit.broadcastMessage(Utils.prefix + ((Player) event.getEntity()).getName() + " was damaged and spy mission " + m.getName()
+                    Bukkit.broadcastMessage(Utilss.prefix + ((Player) event.getEntity()).getName() + " was damaged and spy mission " + m.getName()
                     + " was failed.");
                     MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
                             "reverted in 3 minutes, please leave to prevent suffocation damage.");
@@ -237,17 +270,29 @@ public class MissionListeners implements Listener {
     @EventHandler (priority = EventPriority.MONITOR)
     public void onMove(PlayerMoveEvent event){
         if (event.getTo() != event.getFrom()){
+           if (event.getTo().getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())){
+           if (!MissionManager.getAllMissions().isEmpty()) {
            if (!MissionManager.getActiveMissions().isEmpty()) {
             Mission to = MissionManager.isPlayerInActiveRegion(event.getTo());
             Mission from = MissionManager.isPlayerInActiveRegion(event.getFrom());
              if (from == null && to != null){
                 if (to.getEnterMessage() != null){
-                event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Utils.prefix + to.getEnterMessage()));
-
-                }
+                event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Utilss.prefix + to.getEnterMessage()));
+                return;
+               }
+             }
+          }
+               Mission to = MissionManager.isPlayerInAnyMisionRegion(event.getTo());
+               Mission from = MissionManager.isPlayerInAnyMisionRegion(event.getFrom());
+                   if (from == null && to != null){
+                       if (to.getStatus() != MissionStatus.ACTIVE){
+                           event.getPlayer().sendMessage(ChatColor.RED + "You may not enter this area while mission is not active!");
+                           event.setCancelled(true);
+                       }
+                   }
+               }
              }
         }
-       }
     }
 
     public void removeImportantBarEntities(Mission m, String uuid){
@@ -271,17 +316,18 @@ public class MissionListeners implements Listener {
 
                 if (i > 0) {
                     Bukkit.getWorld(world).playEffect(loc, Effect.MOBSPAWNER_FLAMES, 10);
-                    Bukkit.getWorld(world).playSound(loc, Sound.ENDERDRAGON_HIT, 10F, 1F);
+                    Bukkit.getWorld(world).playSound(loc, Sound.NOTE_BASS_DRUM, 10F, 1F);
                     }
                 else{
                     Bukkit.getWorld(world).playSound(loc, Sound.ENDERDRAGON_GROWL, 10F, 1F);
                      mob.spawnMob(loc, m, "ImportantEntity");
+                    m.getCustomEntitiesUUID().remove("placeholder");
                     Bukkit.getScheduler().cancelTask(taskID);
                 }
                 --i;
             }
         },1L, 5L);
-        circleLoc(loc, 5, 6, Effect.MOBSPAWNER_FLAMES);
+        circleLoc(loc, 5, 6, Effect.LAVA_POP);
 }
     public void circleLoc(final Location loc, int r, int height, final Effect effect){
     double x;
@@ -338,6 +384,7 @@ public class MissionListeners implements Listener {
     @EventHandler
     public void onSpawn(CreatureSpawnEvent event){
         final Entity entity = event.getEntity();
+       if (event.getEntity().getLocation().getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())) {
         if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.CUSTOM){
             if (MissionManager.getAllMissions() != null && !MissionManager.getAllMissions().isEmpty()){
                 for (Mission m : MissionManager.getAllMissions()){
@@ -346,10 +393,21 @@ public class MissionListeners implements Listener {
                   }
                 }
             }
+            if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.CHUNK_GEN
+                    || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.DEFAULT
+                    || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.NATURAL
+                    || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER_EGG){
+                if (MobsManager.isEntityInReplaceMap(event.getEntityType())){
+                 Mob m =  MobsManager.getReplaceMob(event.getEntityType());
+                    m.spawnMob(event.getLocation(), null, "ReplaceEntity");
+                    event.setCancelled(true);
+                    return;
+                }
+            }
         }
 
-        if (event.getEntity().getCustomName() == null) { return; }
-        if (event.getEntity().getCustomName().toLowerCase().contains("iceboss")){
+        else if (event.getEntity().getCustomName() == null) { return; }
+        else if (event.getEntity().getCustomName().toLowerCase().contains("iceboss")){
             bossTaskID =   plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
                 @Override
                 public void run() {
@@ -362,8 +420,8 @@ public class MissionListeners implements Listener {
                 }
             },1L, 40L);
         }
-    }
-
+     }
+  }
     public void iceBossMethod(Entity entity){
        List<Entity> ents = entity.getNearbyEntities(30, 12, 30);
        for (Entity ent : ents){
@@ -397,6 +455,16 @@ public class MissionListeners implements Listener {
                          event.getBlock().setType(Material.AIR);
                     }
                 }, 80L);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onCombust(EntityCombustEvent event){
+        if (event.getEntity().getLocation().getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())){
+            if (event.getEntity().getType() == EntityType.SKELETON || event.getEntity().getType() == EntityType.ZOMBIE){
+                event.setCancelled(true);
+
             }
         }
     }

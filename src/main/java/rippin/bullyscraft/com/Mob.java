@@ -3,6 +3,7 @@ package rippin.bullyscraft.com;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -12,10 +13,8 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import rippin.bullyscraft.com.Configs.MobsConfig;
 import rippin.bullyscraft.com.Configs.ParseItems;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 
 public class Mob {
     private String name;
@@ -31,6 +30,7 @@ public class Mob {
     private String vehicle;
     private boolean importantBar = false;
     private String secondForm;
+    private List<ItemStack> drops = new ArrayList<ItemStack>();
     public Mob(String name){
         this.name = name;
         plugin = FactionsMissions.instance;
@@ -45,6 +45,9 @@ public class Mob {
         armor = ParseItems.getArmor(config.getStringList("Mobs." + name + ".Armor"));
         if (config.getStringList("Mobs." + name + ".Potions") != null)
         potions = ParseItems.parsePotions(config.getStringList("Mobs." + name + ".Potions"));
+       if (config.getStringList("Mobs." + name + ".Drops") != null){
+           drops = ParseItems.getAllItems(config.getStringList("Mobs." + name + ".Drops"));
+       }
         if (config.getString("Mobs." + name + ".DisplayName") != null)
         displayName = config.getString("Mobs." + name + ".DisplayName");
         if ((Double) config.getDouble("Mobs." + name + ".Health") != null)
@@ -72,7 +75,15 @@ public class Mob {
              return null;
 
          }
-        LivingEntity ent = (LivingEntity) Bukkit.getServer().getWorld(loc.getWorld().getName()).spawnEntity(loc, EntityType.valueOf(type));
+        LivingEntity ent;
+        if (type.toUpperCase().equalsIgnoreCase("WITHER_SKELETON")){
+           ent = (LivingEntity) Bukkit.getServer().getWorld(loc.getWorld().getName()).spawnEntity(loc, EntityType.SKELETON);
+            ((Skeleton) ent).setSkeletonType(Skeleton.SkeletonType.WITHER);
+        }
+
+        else {
+        ent = (LivingEntity) Bukkit.getServer().getWorld(loc.getWorld().getName()).spawnEntity(loc, EntityType.valueOf(type));
+        }
 
         if (ent instanceof Zombie){
             Zombie s = (Zombie) ent;
@@ -114,9 +125,9 @@ public class Mob {
                 if (EntityType.valueOf(vehicle) != null){
                     Entity e = Bukkit.getWorld(loc.getWorld().getName()).spawnEntity(loc, EntityType.valueOf(vehicle));
                     if (e instanceof Horse){
-                        if (config.getString("Mobs." + name + ".HorseType") != null){
+                        if (config.getString("Mobs." + vehicle + ".HorseType") != null){
                            //dont bother checking just take string.
-                            Horse.Variant variant = Horse.Variant.valueOf(config.getString("Mobs." + name + ".HorseType"));
+                            Horse.Variant variant = Horse.Variant.valueOf(config.getString("Mobs." + vehicle + ".HorseType"));
                             ((Horse) e).setVariant(variant);
                         }
                     }
@@ -128,20 +139,25 @@ public class Mob {
             }
         }
         ent.setCanPickupItems(false);
-        ent.setMetadata(metadata, new FixedMetadataValue(plugin, m.getName()));
         ent.setRemoveWhenFarAway(false);
-        CreatureSpawnEvent event = new CreatureSpawnEvent(ent, CreatureSpawnEvent.SpawnReason.CUSTOM);
-        Bukkit.getServer().getPluginManager().callEvent(event);
-        if (importantMob) {
+
+        //ent.setMetadata(metadata, new FixedMetadataValue(plugin, m.getName()));
+        if (m != null) {
+        if (metadata.equalsIgnoreCase("ImportantEntity")) {
             m.getImportantEntitiesUUID().add(ent.getUniqueId().toString());
             if (importantBar) {
                 m.getImportantBarEntities().put(ent, getName());
             }
         }
-        else{
+        else if (metadata.equalsIgnoreCase("CustomEntity")){
             m.getCustomEntitiesUUID().add(ent.getUniqueId().toString());
         }
-
+      }
+        else {
+            if (metadata.equalsIgnoreCase("ReplaceEntity")){
+                MobsManager.addReplaceEntityUUIDToListAndFile(ent.getUniqueId().toString(), name);
+            }
+        }
         return ent;
     }
 
@@ -170,6 +186,14 @@ public class Mob {
         this.weapon = weapon;
     }
 
+    public List<ItemStack> getDrops() {
+        return drops;
+    }
+
+    public void setDrops(List<ItemStack> drops) {
+        this.drops = drops;
+    }
+
     public Set<PotionEffect> getPotions() {
         return potions;
     }
@@ -187,4 +211,9 @@ public class Mob {
     }
     public boolean isImportantMob() { return  importantMob; }
     public boolean isImportantBar() { return  importantBar; }
+
+
+
+
+
 }

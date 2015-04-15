@@ -9,10 +9,6 @@
     <version>1.0-SNAPSHOT</version>
     <repositories>
         <repository>
-            <id>spigot-repo</id>
-            <url>http://repo.md-5.net/content/groups/public/</url>
-        </repository>
-        <repository>
             <id>sk89q-repo</id>
             <url>http://maven.sk89q.com/repo/</url>
         </repository>
@@ -23,15 +19,15 @@
     </repositories>
     <dependencies>
         <dependency>
-            <groupId>org.spigotmc</groupId>
+            <groupId>org.spigot</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.7.10-R0.1-SNAPSHOT</version>
+            <version>1.8.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.spigot</groupId>
             <artifactId>spigot.jar</artifactId>
-            <version>1.7.10</version>
+            <version>1.8.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -44,7 +40,7 @@
     <dependency>
         <groupId>com.sk89q</groupId>
         <artifactId>worldguard</artifactId>
-        <version>5.9.1-SNAPSHOT</version>
+        <version>LATEST</version>
         <scope>provided</scope>
         <type>jar</type>
     </dependency>

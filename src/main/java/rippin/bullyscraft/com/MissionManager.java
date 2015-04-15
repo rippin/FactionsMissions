@@ -21,6 +21,8 @@ public class MissionManager {
     private static List<Mission> activeMissions = new ArrayList<Mission>();
     private static List<String> revertMissions = MissionsConfig.getConfig().getStringList("Active-Missions");
     private static boolean pasteSchematic = Config.getConfig().getBoolean("Paste-Schematics");
+    private static String teleportworldMessage = ChatColor.translateAlternateColorCodes('&', Config.getConfig().getString("World-Teleport-Message"));
+    private static String missionWorld = Config.getConfig().getString("Mission-World");
 
     public static void loadMissions(FactionsMissions plugin){
 
@@ -136,14 +138,14 @@ public class MissionManager {
     public static void setMissionSpawnsToConfig(Mission m){
         List<String> strings = new ArrayList<String>();
         for (Location loc : m.getSpawns()){
-            strings.add(Utils.serializeLoc(loc));
+            strings.add(Utilss.serializeLoc(loc));
         }
         MissionsConfig.getConfig().set("Missions." + m.getName() + ".Spawns", strings);
         MissionsConfig.saveFile();
     }
     public static void setImportantEntityToConfig(Mission m, String key){
         m.getImportantEntities();
-        MissionsConfig.getConfig().set("Missions." + m.getName() + ".Important-Entities." + key + ".Location", Utils.serializeLoc(m.getImportantEntities().get(key)));
+        MissionsConfig.getConfig().set("Missions." + m.getName() + ".Important-Entities." + key + ".Location", Utilss.serializeLoc(m.getImportantEntities().get(key)));
         MissionsConfig.saveFile();
     }
 
@@ -154,6 +156,15 @@ public class MissionManager {
     }
     public static Mission isPlayerInActiveRegion(Location loc){
         for (Mission m : getActiveMissions()){
+            if (m.isLocationInMissionRegion(loc)) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    public static Mission isPlayerInAnyMisionRegion(Location loc){
+        for (Mission m : getAllMissions()){
             if (m.isLocationInMissionRegion(loc)) {
                 return m;
             }
@@ -243,5 +254,21 @@ public class MissionManager {
                     chunk.load();
                 }
             }
+    }
+
+    public static String getTeleportworldMessage() {
+        return teleportworldMessage;
+    }
+
+    public static void setTeleportworldMessage(String teleportworldMessage) {
+        MissionManager.teleportworldMessage = teleportworldMessage;
+    }
+
+    public static String getMissionWorld() {
+        return missionWorld;
+    }
+
+    public static void setMissionWorld(String missionWorld) {
+        MissionManager.missionWorld = missionWorld;
     }
 }

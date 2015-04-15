@@ -12,3 +12,8 @@ Mobs:
     -
     Potions:
     -
+    Drops:
+    -
+
+Replace-Mobs-In-Mission-World:
+  - 'Entity:MissionMob:10%'

@@ -8,6 +8,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import rippin.bullyscraft.com.Configs.Config;
 import rippin.bullyscraft.com.Configs.ConfigManager;
@@ -34,6 +35,8 @@ public class MissionCommands implements CommandExecutor {
                     sender.sendMessage(ChatColor.RED + "/bullymission forceEndMission [mission]");
                     sender.sendMessage(ChatColor.RED + "/bullymission setSchematicLoc [mission]");
                     sender.sendMessage(ChatColor.RED + "/bullymission setMainPoint [mission]");
+                    sender.sendMessage(ChatColor.RED + "/bullymission reload");
+                    sender.sendMessage(ChatColor.RED + "/bullymission clearRList | crl to clear replace mobs list.");
                 }
                 else {
                     sender.sendMessage(ChatColor.RED + "No perms");
@@ -49,7 +52,7 @@ public class MissionCommands implements CommandExecutor {
                     Mission m = MissionManager.getMission(args[1]);
                     m.getSpawns().add(p.getLocation());
                     MissionManager.setMissionSpawnsToConfig(m);
-                     p.sendMessage(Utils.prefix + ChatColor.GREEN + "Spawn set for " + m.getName());
+                     p.sendMessage(Utilss.prefix + ChatColor.GREEN + "Spawn set for " + m.getName());
 
                 }
                 else{
@@ -69,6 +72,22 @@ public class MissionCommands implements CommandExecutor {
             }
                 return true;
             }
+            else if (args[0].equalsIgnoreCase("spawnMob")){
+                if (sender instanceof Player) {
+                    Player p = (Player) sender;
+                if (sender.isOp()){
+                    if (args.length == 2){
+                        if (MobsManager.containsMob(args[1])){
+                            Mob m = MobsManager.getMob(args[1]);
+                            m.spawnMob(p.getEyeLocation(), null, "Spawn");
+                            p.sendMessage(ChatColor.GREEN + args[1] + " ahas been spawned");
+                        }
+                    }
+                }
+              } else {
+                    sender.sendMessage(ChatColor.RED + "No console.");
+                }
+            }
 
             else if (args[0].equalsIgnoreCase("setSchematicLoc")) {
                 if (sender.isOp()) {
@@ -78,7 +97,7 @@ public class MissionCommands implements CommandExecutor {
                             if (MissionManager.isMission(args[1])){
                                 Mission m = MissionManager.getMission(args[1]);
                                 m.setSchematicLoc(p.getLocation());
-                                p.sendMessage(Utils.prefix + ChatColor.GREEN + "Schematic loc set for " + m.getName());
+                                p.sendMessage(Utilss.prefix + ChatColor.GREEN + "Schematic loc set for " + m.getName());
 
                             }
                             else{
@@ -107,7 +126,7 @@ public class MissionCommands implements CommandExecutor {
                                 MissionsConfig.getConfig().set("Missions." + args[1] + ".World", p.getLocation().getWorld().getName());
                                 MissionsConfig.saveFile();
                                 MissionsConfig.reload();
-                                p.sendMessage(Utils.prefix + ChatColor.GREEN + "Mission created named: " + args[1]);
+                                p.sendMessage(Utilss.prefix + ChatColor.GREEN + "Mission created named: " + args[1]);
 
                             }
                             else{
@@ -159,10 +178,10 @@ public class MissionCommands implements CommandExecutor {
                         if (sender instanceof Player) {
                             Player p = (Player) sender;
                             if (MissionManager.isMission(args[1])){
-                                MissionsConfig.getConfig().set("Missions." + args[1] + ".MainPoint", Utils.serializeLoc(p.getLocation()));
+                                MissionsConfig.getConfig().set("Missions." + args[1] + ".MainPoint", Utilss.serializeLoc(p.getLocation()));
                                 MissionsConfig.saveFile();
                                 MissionsConfig.reload();
-                                p.sendMessage(Utils.prefix + ChatColor.GREEN + "Set Main Point Location for Mission: " + args[1]);
+                                p.sendMessage(Utilss.prefix + ChatColor.GREEN + "Set Main Point Location for Mission: " + args[1]);
 
                             }
                             else{
@@ -193,7 +212,7 @@ public class MissionCommands implements CommandExecutor {
                         if (MobsManager.containsMob(args[2])){
                             m.getImportantEntities().put(args[2], p.getLocation());
                             MissionManager.setImportantEntityToConfig(m, args[2]);
-                            p.sendMessage(Utils.prefix + ChatColor.GREEN + "Important entity set for " + m.getName());
+                            p.sendMessage(Utilss.prefix + ChatColor.GREEN + "Important entity set for " + m.getName());
                         }
                         else {
                             sender.sendMessage(ChatColor.RED + " That is not a mob.");
@@ -223,7 +242,7 @@ public class MissionCommands implements CommandExecutor {
                             Player p = (Player) sender;
                             if (MissionManager.isMission(args[1])){
                                 Mission m = MissionManager.getMission(args[1]);
-                                Utils.createRegion(p, m, plugin);
+                                Utilss.createRegion(p, m, plugin);
                                 //add world here if not using schem loc
                             }
                             else {
@@ -257,7 +276,7 @@ public class MissionCommands implements CommandExecutor {
                             double z = m.getMainPoint().getZ();
                             Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', Config.getConfig().getString("BroadcastMessage")).replace("%name%", m.getName())
                                     .replace("%type%", m.getType().getValue()).replace("%coords%", "X: " + x + "Y: " + y + "Z: " + z));
-                                p.sendMessage(Utils.prefix + "Mission " + m.getName() + " has been force started.");
+                                p.sendMessage(Utilss.prefix + "Mission " + m.getName() + " has been force started.");
                         }
                         else {
                             sender.sendMessage(ChatColor.RED + " That is not a qeued mission.");
@@ -291,6 +310,22 @@ public class MissionCommands implements CommandExecutor {
                 }
                 return true;
             }
+
+            else if (args[0].equalsIgnoreCase("clearRList") || args[0].equalsIgnoreCase("crl") ){
+                if (sender.isOp()){
+                    if (args.length  == 1){
+                        MobsManager.clearReplaceEntUUIDs();
+                        sender.sendMessage(ChatColor.GREEN + "List Cleared.");
+                    }
+                    else {
+                        sender.sendMessage("Wrong arguments.");
+                    }
+                }
+                else {
+                    sender.sendMessage(ChatColor.RED + "No perms.");
+                }
+                return true;
+            }
             else if (args[0].equalsIgnoreCase("forceEnd")){
                 if (sender.isOp()) {
                     if (args.length == 2){
@@ -299,7 +334,7 @@ public class MissionCommands implements CommandExecutor {
                             if (MissionManager.isActiveMission(args[1])){
                                 Mission m = MissionManager.getMission(args[1]);
                                 m.end();
-                                p.sendMessage(Utils.prefix + "Mission " + m.getName() + " has been force ended.");
+                                p.sendMessage(Utilss.prefix + "Mission " + m.getName() + " has been force ended.");
                             }
                             else {
                                 sender.sendMessage(ChatColor.RED + " That is not a mission.");

@@ -2,3 +2,8 @@ Mission-Task: false
 Mission-Delay: 3600
 BroadcastMessage: 'Test message.'
 Paste-Schematics: false
+Mission-World: world
+World-Teleport-Message: '&a'
+
+
+

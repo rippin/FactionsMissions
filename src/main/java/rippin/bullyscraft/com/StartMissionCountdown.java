@@ -32,7 +32,7 @@ public class StartMissionCountdown {
                         Double x = m.getSchematicLoc().getX();
                         Double y = m.getSchematicLoc().getY();
                         Double z = m.getSchematicLoc().getZ();
-                        Bukkit.broadcastMessage(broadcastMessage.replace("%name%", m.getName())
+                        Bukkit.broadcastMessage(Utilss.prefix + broadcastMessage.replace("%name%", m.getName())
                                 .replace("%type%", m.getType().getValue()).replace("%coords%", "X: " + x.intValue() + " Y: " + y.intValue() + " Z: " + z.intValue()));
                         delay = saveDelay;
                     }

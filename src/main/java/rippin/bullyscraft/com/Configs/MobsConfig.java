@@ -30,7 +30,7 @@ public class MobsConfig {
                 copy(plugin.getResource("mobs.yml"), configFile);
                 reload(); //reload yml just in case
 
-                saveFile(getFile(), getConfig());
+                saveFile();
                 plugin.getServer().getLogger().info("mobs.yml has been created!");
             } catch (IOException e) {
 
@@ -63,9 +63,9 @@ public class MobsConfig {
         return config;
     }
 
-    public static void saveFile(File file, FileConfiguration config) {
+    public static void saveFile() {
         try {
-            config.save(file);
+            config.save(configFile);
         } catch (IOException e) {
             e.printStackTrace();
         }

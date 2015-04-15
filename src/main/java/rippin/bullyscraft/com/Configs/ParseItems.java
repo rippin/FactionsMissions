@@ -21,88 +21,100 @@ public class ParseItems {
         }
         List<ItemStack> armor = new ArrayList<ItemStack>();
         for (String i : items){
-            if (i.contains(" ")) {
-                String splitspace[] = i.split("\\s+");
-                ItemStack item = new ItemStack(Material.getMaterial(splitspace[0]));
-                for (int j = 1; j < splitspace.length; j++){
-                    if (splitspace[j].contains("@")){
-                        String split[] = splitspace[j].split("@");
-                        if (split[0] != null && split[1] != null){
-                            item.addUnsafeEnchantment(Enchantment.getByName(getOfficialEnchantmentName(split[0])), Integer.parseInt(split[1]));
-                        }
-                    }
-                    else {
-                        LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
-                        meta.setColor(getFromString(splitspace[j]));
-                        item.setItemMeta(meta);
-                    }
-                }
-
-                armor.add(item);
-            }
-            else {
-                ItemStack item = new ItemStack(Material.getMaterial(i));
-                armor.add(item);
-            }
+            armor.add(parseItems(i));
         }
         return armor;
     }
 
-    //ITEM:QUANTITY NAME:name_space ENCHANT:Sharpness@5 Lore:lore|lore_lore | = space _ = new line
+    //ITEM:QUANTITY NAME:name_space Data:data ENCHANT:Sharpness@5 Lore:lore|lore_lore | = space _ = new line
+    @SuppressWarnings("deprecated")
     public static ItemStack parseItems(String s){
-            if (s.contains(" ")){
-                String splitspace[] = s.split("\\s+");
-                ItemStack i;
-                if (splitspace[0].contains(":")) {
-                    String splitamount[] = splitspace[0].split(":");
+        if (s.contains(" ")){
+            String splitspace[] = s.split("\\s+");
+            ItemStack i;
+            if (splitspace[0].contains(":")) {
+                String splitamount[] = splitspace[0].split(":");
+                if (splitspace[1].contains("Data:")){
+                    String split[] = splitspace[1].split(":");
+                    i = new ItemStack(Material.getMaterial(splitamount[0]),
+                            Integer.parseInt(splitamount[1]), (short)0, Byte.parseByte(split[1]));
+                }
+                else {
                     i = new ItemStack(Material.getMaterial(splitamount[0]), Integer.parseInt(splitamount[1]));
                 }
+            }
 
-                else{
+            else{
+                if (splitspace[1].contains("Data:")){
+                    String split[] = splitspace[1].split(":");
+                    i = new ItemStack(Material.getMaterial(splitspace[0]), 1, (short)0, Byte.parseByte(split[1]));
+                }
+                else {
                     i = new ItemStack(Material.getMaterial(splitspace[0]));
                 }
-                for (int j = 1; j < splitspace.length; j++){
-                    ItemMeta meta = i.getItemMeta();
-                    if (splitspace[j].toLowerCase().contains("Name".toLowerCase())){
-                        String splitName[] = splitspace[j].split(":");
-                        splitName[1] = splitName[1].replace("_", " ");
+            }
+            for (int j = 1; j < splitspace.length; j++){
+                ItemMeta meta = i.getItemMeta();
+                if (splitspace[j].toLowerCase().contains("Name".toLowerCase())){
+                    String splitName[] = splitspace[j].split(":");
+                    splitName[1] = splitName[1].replace("_", " ");
 
-                        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', splitName[1]));
-                        i.setItemMeta(meta);
+                    meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', splitName[1]));
+                    i.setItemMeta(meta);
+                }
+                else if (splitspace[j].toLowerCase().contains("Lore".toLowerCase())){
+                    meta = i.getItemMeta();
+                    String splitLore[] = splitspace[j].split(":");
+                    splitLore[1] = splitLore[1].replace("|", " ");
+                    splitLore[1] = ChatColor.translateAlternateColorCodes('&', splitLore[1]);
+                    if (splitLore[1].contains("_")){
+                        String splitLoreSpace[] = splitLore[1].split("_");
+                        meta.setLore(Arrays.asList(splitLoreSpace));
                     }
-                    else if (splitspace[j].toLowerCase().contains("Lore".toLowerCase())){
-                        meta = i.getItemMeta();
-                        String splitLore[] = splitspace[j].split(":");
-                        splitLore[1] = splitLore[1].replace("|", " ");
-                        splitLore[1] = ChatColor.translateAlternateColorCodes('&', splitLore[1]);
-                        if (splitLore[1].contains("_")){
-                            String splitLoreSpace[] = splitLore[1].split("_");
-                            meta.setLore(Arrays.asList(splitLoreSpace));
-                        }
-                        else {
-                            String splitLoreSpace[] = new String[1];
-                            splitLoreSpace[0] = splitLore[1];
-                            meta.setLore(Arrays.asList(splitLoreSpace));
-                        }
-                        i.setItemMeta(meta);
+                    else {
+                        String splitLoreSpace[] = new String[1];
+                        splitLoreSpace[0] = splitLore[1];
+                        meta.setLore(Arrays.asList(splitLoreSpace));
                     }
-                    else if (splitspace[j].toLowerCase().contains("Enchant".toLowerCase())){
-                        String splitEnchant[] = splitspace[j].split(":");
-                        String splitLevel[] = splitEnchant[1].split("@");
-                        i.addUnsafeEnchantment(Enchantment.getByName(getOfficialEnchantmentName(splitLevel[0])), Integer.parseInt(splitLevel[1]));
+                    i.setItemMeta(meta);
+                }
+                else if (splitspace[j].toLowerCase().contains("Enchant".toLowerCase())){
+                    String splitEnchant[] = splitspace[j].split(":");
+                    String splitLevel[] = splitEnchant[1].split("@");
+                    i.addUnsafeEnchantment(Enchantment.getByName(getOfficialEnchantmentName(splitLevel[0])), Integer.parseInt(splitLevel[1]));
+                }
+                else if (splitspace[j].toLowerCase().contains("LeatherColor".toLowerCase())){
+                    if (isArmor(i.toString())) {
+                        if (i.getType().toString().toLowerCase().contains("leather")){
+                            LeatherArmorMeta leatherArmorMeta = (LeatherArmorMeta) i.getItemMeta();
+                            leatherArmorMeta.setColor(getFromString(splitspace[j]));
+                            i.setItemMeta(leatherArmorMeta);
+
+                        }
                     }
                 }
-                return i;
+            }
+            return i;
+        }
+        else{
+            if (s.contains(":")){
+                String split[] = s.split(":");
+                return new ItemStack(Material.getMaterial(split[0]), Integer.parseInt(split[1]));
             }
             else{
-                if (s.contains(":")){
-                    String split[] = s.split(":");
-                    return new ItemStack(Material.getMaterial(split[0]), Integer.parseInt(split[1]));
-                }
-                else{
-                    return new ItemStack(Material.getMaterial(s));
-                }
+                return new ItemStack(Material.getMaterial(s));
             }
+        }
+    }
+
+    public static List<ItemStack> getAllItems(List<String> strings){
+        List<ItemStack> items = new ArrayList<ItemStack>();
+
+        for (String key : strings){
+            items.add(parseItems(key));
+        }
+
+        return items;
     }
 
     public static Set<PotionEffect> parsePotions(List<String> potions){
@@ -272,6 +284,16 @@ public class ParseItems {
         }
         return buff;
 
+    }
+
+    public static boolean isArmor(String s){
+        if (s.toLowerCase().contains("leggings") ||
+                s.toLowerCase().contains("helmet") ||
+                s.toLowerCase().contains("chestplate")
+                || s.toLowerCase().contains("boots")) {
+            return true;
+        }
+        return false;
     }
 
 }

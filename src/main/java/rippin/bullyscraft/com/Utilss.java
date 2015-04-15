@@ -2,7 +2,6 @@ package rippin.bullyscraft.com;
 
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.bukkit.selections.Selection;
-import com.sk89q.worldguard.protection.databases.ProtectionDatabaseException;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
@@ -15,7 +14,7 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 
-public class Utils {
+public class Utilss {
     public static final String prefix = ChatColor.GRAY + "[" + ChatColor.DARK_RED + "BullyMissions" + ChatColor.GRAY + "] ";
     public static Location parseLoc(String string){
 
@@ -55,7 +54,7 @@ public class Utils {
             try {
                 plugin.getWorldGuard().getRegionManager(player.getWorld()).save();
                 player.sendMessage(ChatColor.RED + "Region has been set.");
-            } catch (ProtectionDatabaseException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -63,4 +62,13 @@ public class Utils {
             player.sendMessage(ChatColor.RED + "Selection is null.");
         }
     }
+
+    public static int randInt(int min, int max) {
+
+        Random rand = new Random();
+        int randomNum = rand.nextInt((max - min) + 1) + min;
+
+        return randomNum;
+    }
+
 }
