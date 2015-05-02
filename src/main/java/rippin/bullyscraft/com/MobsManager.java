@@ -1,7 +1,11 @@
 package rippin.bullyscraft.com;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import rippin.bullyscraft.com.Configs.MobsConfig;
 
@@ -64,7 +68,7 @@ public class MobsManager {
                 String split[] = key.split(":");
                 if (EntityType.valueOf(split[0].toUpperCase()) != null){
                     if (isEntityInReplaceMap(EntityType.valueOf(split[0].toUpperCase()))) {
-                        List temp = replaceEnts.get(EntityType.valueOf(split[0].toUpperCase()));
+                        List<String> temp = new ArrayList<String>(replaceEnts.get(EntityType.valueOf(split[0].toUpperCase())));
                         temp.add(split[1]);
                         replaceEnts.put(EntityType.valueOf(split[0].toUpperCase()), temp);
 
@@ -78,6 +82,8 @@ public class MobsManager {
             }
 
         }
+        //load the uuids for spawned mobs as well.
+        replaceEntUUIDS = MobsConfig.getConfig().getStringList("Alive-Mobs-Replaced");
 
 
     }
@@ -116,6 +122,30 @@ public class MobsManager {
         return  null;
     }
 
+    public static void deleteReplaceEnts(){
+        ListIterator<String> it = getReplaceEntUUIDS().listIterator();
+        while (it.hasNext()){
+            String split[] = it.next().split(":");
+            for (Entity ent : Bukkit.getWorld(MissionManager.getMissionWorld()).getEntities()){
+                    Chunk c = ent.getLocation().getChunk();
+                  if (!c.isLoaded()){
+                       c.load();
+                      System.out.println("Chunk:" + c.getX() + ":" + c.getZ() + " loaded :" + System.currentTimeMillis() );
+                    }
+                System.out.println("Ent UUIDS: " + ent.getUniqueId().toString() + " | " + split[0]);
+                if (ent.getUniqueId().toString().equalsIgnoreCase(split[0])){
+                    System.out.println("test");
+                    ent.remove();
+                    it.remove();
+
+                }
+            }
+        }
+        MobsConfig.getConfig().set("Alive-Mobs-Replaced", replaceEntUUIDS);
+        MobsConfig.saveFile();
+
+    }
+
     public static boolean isInReplaceEntUUID(String uuid){
         for (String key : replaceEntUUIDS){
             String parse[] = key.split(":");
@@ -146,7 +176,7 @@ public class MobsManager {
             String split[] = s.split("@");
             int i = Integer.parseInt(split[1]);
             if (rand > i){
-                l.listIterator().remove();
+                it.remove();
             }
 
         }

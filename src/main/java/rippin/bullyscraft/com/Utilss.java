@@ -53,7 +53,7 @@ public class Utilss {
             plugin.getWorldGuard().getRegionManager(player.getWorld()).addRegion(reg);
             try {
                 plugin.getWorldGuard().getRegionManager(player.getWorld()).save();
-                player.sendMessage(ChatColor.RED + "Region has been set.");
+                player.sendMessage(Utilss.prefix + ChatColor.GREEN + "Region has been set for " + m.getName());
             } catch (Exception e) {
                 e.printStackTrace();
             }

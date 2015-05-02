@@ -1,6 +1,7 @@
 package rippin.bullyscraft.com;
 
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -8,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -15,11 +17,10 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import rippin.bullyscraft.com.Configs.MissionsConfig;
+import rippin.bullyscraft.com.Configs.MobsConfig;
+import rippin.bullyscraft.com.Events.MobSpawnEvent;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class MissionListeners implements Listener {
@@ -43,16 +44,66 @@ public class MissionListeners implements Listener {
     public void onEntityDeath(final EntityDeathEvent event){
         String uuid = event.getEntity().getUniqueId().toString();
         Mission m = MissionManager.getMobMission(uuid);
+
+        if (event.getEntity().hasMetadata("minion")){
+            Iterator<MinionSpawnCountdown> it = Mob.msc.listIterator();
+            while (it.hasNext()) {
+                MinionSpawnCountdown minionSpawnCountdown = it.next();
+                if (minionSpawnCountdown.alivenEntUUIDS.containsKey(uuid)){
+                    Mob mob  = minionSpawnCountdown.alivenEntUUIDS.get(uuid);
+                    minionSpawnCountdown.alivenEntUUIDS.remove(uuid);
+                    if (!mob.getDrops().isEmpty()) {
+                        event.getDrops().clear();
+                        event.getDrops().addAll(mob.getDrops());
+                    }
+                    //remove from entity list in countdown
+                    ListIterator<LivingEntity> eIt = minionSpawnCountdown.minionEntity.listIterator();
+                    while (eIt.hasNext()){
+                        if (eIt.next().getUniqueId().toString().equalsIgnoreCase(uuid)){
+                            eIt.remove();
+                        }
+                    }
+                    break;
+
+                }
+
+            }
+        }
+
         if (m == null) {
             if (MissionManager.getMissionWorld().equalsIgnoreCase(event.getEntity().getLocation().getWorld().getName())){
                 if (MobsManager.isInReplaceEntUUID(uuid)){
                    Mob repl = MobsManager.removeReplaceEntUUID(uuid);
                     event.getDrops().clear();
-                    event.getDrops().addAll(repl.getDrops());
+                    if (!repl.getDrops().isEmpty()) {
+                        event.getDrops().addAll(repl.getDrops());
+                    }
                 }
-            }
-        }
+          }
+  }
        else  {
+            //do drops
+            //remove uuid
+            if (m.getCustomEntitiesUUID().contains(uuid)){
+                Mob mob = m.getMobs().get(uuid);
+                event.getDrops().clear();
+                if (!mob.getDrops().isEmpty()) {
+                    event.getDrops().addAll(mob.getDrops());
+                }
+                m.getCustomEntitiesUUID().remove(uuid);
+                m.getMobs().remove(uuid);
+            }
+            else if(m.getImportantEntitiesUUID().contains(uuid)) {
+                Mob mob = m.getMobs().get(uuid);
+                event.getDrops().clear();
+                if (!mob.getDrops().isEmpty()) {
+                    event.getDrops().addAll(mob.getDrops());
+                }
+                m.getImportantEntitiesUUID().remove(uuid);
+                removeImportantBarEntities(m,uuid);
+                m.getMobs().remove(uuid);
+
+            }
 
             // Second Form spawning
             if (m.getSecondFormMap().size() > 0){
@@ -75,20 +126,6 @@ public class MissionListeners implements Listener {
             }
             //END SECOND FORM
 
-            //do drops
-            //remove uuid
-            if (m.getCustomEntitiesUUID().contains(uuid)){
-                    m.getCustomEntitiesUUID().remove(uuid);
-                event.getDrops().clear();
-
-                }
-                else if(m.getImportantEntitiesUUID().contains(uuid)) {
-                    m.getImportantEntitiesUUID().remove(uuid);
-                    removeImportantBarEntities(m,uuid);
-                    event.getDrops().clear();
-
-                }
-
                 if (m.getType() == MissionType.ELIMINATE || m.getType() == MissionType.SPY){
                     int totalEnts = (m.getCustomEntitiesUUID().size() + m.getImportantEntitiesUUID().size());
                     MissionManager.messagePlayersInMission(m, Utilss.prefix + "&aA mob has been killed, " + totalEnts + " mobs remain.");
@@ -97,7 +134,7 @@ public class MissionListeners implements Listener {
                            final Mission finalMission = m;
                            Player p = event.getEntity().getKiller();
                            p.sendMessage(ChatColor.GOLD + "You have killed the last mob in the " + m.getName() + " you will now receive rewards.");
-                           m.giveRewards(p);
+                           m.giveRewards(p.getName());
                            Bukkit.broadcastMessage(Utilss.prefix + "Players have eliminated all mobs from the " + m.getName() + " mission.");
                            if (MissionManager.pasteSchematic()) {
                            MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
@@ -214,6 +251,7 @@ public class MissionListeners implements Listener {
                         final Mission finalMission = m;
                         Bukkit.broadcastMessage(Utilss.prefix + ((Player) event.getEntity()).getName() + " was damaged and spy mission " + m.getName()
                                 + " was failed.");
+                        if (m.getRevertSchematic() != null) {
                         MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
                                 "reverted in 3 minutes, please leave to prevent suffocation damage.");
                         plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
@@ -225,6 +263,7 @@ public class MissionListeners implements Listener {
                             }
                         },1200L);
                      }
+                    }
                    }
                 }
                     //regular damage code
@@ -279,15 +318,29 @@ public class MissionListeners implements Listener {
                 if (to.getEnterMessage() != null){
                 event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', Utilss.prefix + to.getEnterMessage()));
                 return;
+                
                }
              }
+            else if (to == null && from != null){
+                    if (from.getType() == MissionType.TIME){
+                        if (!event.getPlayer().hasPermission("bullymissions.admin")) {
+                        event.getPlayer().sendMessage(ChatColor.RED + "You may not LEAVE this area while THIS mission is active!");
+                        event.getPlayer().getLocation().getDirection().multiply(-2);
+                        event.setCancelled(true);
+                        }
+                    }
+                    return;
+                }
           }
                Mission to = MissionManager.isPlayerInAnyMisionRegion(event.getTo());
                Mission from = MissionManager.isPlayerInAnyMisionRegion(event.getFrom());
                    if (from == null && to != null){
                        if (to.getStatus() != MissionStatus.ACTIVE){
+                           if (!event.getPlayer().hasPermission("bullymissions.admin")) {
                            event.getPlayer().sendMessage(ChatColor.RED + "You may not enter this area while mission is not active!");
+                           event.getPlayer().getLocation().getDirection().multiply(-2);
                            event.setCancelled(true);
+                           }
                        }
                    }
                }
@@ -363,7 +416,10 @@ public class MissionListeners implements Listener {
 
     @EventHandler
     public void chunkUnload(ChunkUnloadEvent event){
-        if (!MissionManager.getActiveMissions().isEmpty() || (MissionManager.getRevertMissions() != null && !MissionManager.getRevertMissions().isEmpty())){
+        if (event.getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())){
+            Chunk c = event.getChunk();
+           // System.out.println("Chunk:" + c.getX() + ":" + c.getZ() + " unloaded :" + System.currentTimeMillis() );
+            if (!MissionManager.getActiveMissions().isEmpty() || (MissionManager.getRevertMissions() != null && !MissionManager.getRevertMissions().isEmpty())){
             for (Mission m : MissionManager.getActiveMissions()){
                 int minX = (int) m.getMissionRegion().getMinimumPoint().getX();
                 int minZ = (int) m.getMissionRegion().getMinimumPoint().getZ();
@@ -380,6 +436,28 @@ public class MissionListeners implements Listener {
             }
            }
         }
+       }
+    }
+    @EventHandler
+    public void chunkLoad(ChunkLoadEvent event){
+        if (event.getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())){
+            Chunk c = event.getChunk();
+            ListIterator<String> it = MobsManager.getReplaceEntUUIDS().listIterator();
+            while (it.hasNext()){
+                String split[] = it.next().split(":");
+                for (Entity e : c.getEntities()){
+                    if (e instanceof  LivingEntity){
+                    if (e.getUniqueId().toString().equalsIgnoreCase(split[0])){
+                            System.out.println("test");
+                            e.remove();
+                            it.remove();
+                        }
+                    }
+                }
+             }
+            MobsConfig.getConfig().set("Alive-Mobs-Replaced", MobsManager.getReplaceEntUUIDS());
+            MobsConfig.saveFile();
+            }
     }
     @EventHandler
     public void onSpawn(CreatureSpawnEvent event){
@@ -405,23 +483,25 @@ public class MissionListeners implements Listener {
                 }
             }
         }
-
-        else if (event.getEntity().getCustomName() == null) { return; }
-        else if (event.getEntity().getCustomName().toLowerCase().contains("iceboss")){
+     }
+  }
+    @EventHandler
+    public void onMobSpawn(final MobSpawnEvent event){
+        if (event.getMob().getAbilities().contains("ICEBOSS")){
             bossTaskID =   plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
                 @Override
                 public void run() {
-                    if (entity != null && !entity.isDead()){
-                        iceBossMethod(entity);
+                    if (event.getEntity() != null && !event.getEntity().isDead()){
+                        iceBossMethod(event.getEntity());
                     }
                     else {
-                       Bukkit.getScheduler().cancelTask(bossTaskID);
+                        Bukkit.getScheduler().cancelTask(bossTaskID);
                     }
                 }
             },1L, 40L);
         }
-     }
-  }
+    }
+
     public void iceBossMethod(Entity entity){
        List<Entity> ents = entity.getNearbyEntities(30, 12, 30);
        for (Entity ent : ents){
@@ -431,11 +511,7 @@ public class MissionListeners implements Listener {
                Vector to = ent.getLocation().add(0, 1, 0).toVector().clone();
                Vector from = loc.toVector().clone();
                Vector vel = to.subtract(from).normalize();
-/*
-               Entity entity1 = loc.getWorld().spawnEntity(loc, EntityType.SNOWBALL);
-               entity1.setVelocity(vel.multiply(1));
-                       entity1.setPassenger(block);
-*/
+
                FallingBlock block = loc.getWorld().spawnFallingBlock(loc, Material.ICE, (byte) 0);
                block.setVelocity(vel.multiply(2.5));
                block.setMetadata("ICE-BOSS", new FixedMetadataValue(plugin,""));
@@ -469,4 +545,52 @@ public class MissionListeners implements Listener {
         }
     }
 
+    @EventHandler
+    public void onProjectileHit(EntityDamageByEntityEvent event){
+       if (event.getEntity() instanceof  LivingEntity) {
+        if (event.getDamager() instanceof  Projectile){
+            for (Mob m : MobsManager.getAllMobs()){
+                if (event.getDamager().hasMetadata(m.getName())){
+                    event.setDamage(m.getProjectileDamage());
+                    if (!m.getProjPotions().isEmpty()){
+                        ((LivingEntity) event.getEntity()).addPotionEffects(m.getProjPotions());
+                    }
+                    return;
+                }
+            }
+        }
+      }
+    }
+
+
+    @SuppressWarnings("deprecation")
+    @EventHandler
+    public void onExplode(final EntityExplodeEvent event){
+        if (event.getLocation().getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())){
+            event.setCancelled(true);
+           plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+               @Override
+               public void run() {
+
+              List<Block> blocks = new ArrayList<Block>(event.blockList());
+                for (Block b : blocks){
+                   FallingBlock f =  b.getWorld().spawnFallingBlock(b.getLocation().clone(), b.getType(), b.getData());
+                   float x = (float) -1 + (float) (Math.random() * ((1 - -1)+1));
+                   float y = (float) -2 + (float) (Math.random() * ((2 - -2)+1));
+                   float z = (float) -1 + (float) (Math.random() * ((1 - -1)+1));
+                   f.setVelocity(new Vector(x,y,z));
+                   f.setDropItem(false);
+                   f.setMetadata("explode", new FixedMetadataValue(plugin, ""));
+                   }
+               }
+           }, 4L);
+         }
+    }
+
+    @EventHandler
+    public void onChange(EntityChangeBlockEvent event){
+        if (event.getEntity().hasMetadata("explode")){
+            event.setCancelled(true);
+        }
+    }
 }

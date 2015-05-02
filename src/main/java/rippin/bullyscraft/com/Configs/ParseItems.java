@@ -87,7 +87,8 @@ public class ParseItems {
                     if (isArmor(i.toString())) {
                         if (i.getType().toString().toLowerCase().contains("leather")){
                             LeatherArmorMeta leatherArmorMeta = (LeatherArmorMeta) i.getItemMeta();
-                            leatherArmorMeta.setColor(getFromString(splitspace[j]));
+                            String splitColor[] = splitspace[j].split(":");
+                            leatherArmorMeta.setColor(getFromString(splitColor[1]));
                             i.setItemMeta(leatherArmorMeta);
 
                         }

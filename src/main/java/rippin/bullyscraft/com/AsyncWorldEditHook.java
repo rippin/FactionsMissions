@@ -27,6 +27,7 @@ import java.io.IOException;
  */
 public class AsyncWorldEditHook {
 
+    @SuppressWarnings("deprecation")
     public static void AWEHookPaste(FactionsMissions plugin, final Mission m) throws WorldEditException, IOException, DataException {
         AsyncWorldEditMain asyncWorldEdit = (AsyncWorldEditMain) plugin.getAsyncWorldEdit();
         WorldEdit worldEdit = plugin.getWorldEdit().getWorldEdit();
@@ -68,7 +69,7 @@ public class AsyncWorldEditHook {
 
     }
 
-
+   @SuppressWarnings("deprecation")
     public static void revertHookPaste(FactionsMissions plugin, final Mission m) throws WorldEditException, IOException, DataException {
         AsyncWorldEditMain asyncWorldEdit = (AsyncWorldEditMain) plugin.getAsyncWorldEdit();
         WorldEdit worldEdit = plugin.getWorldEdit().getWorldEdit();

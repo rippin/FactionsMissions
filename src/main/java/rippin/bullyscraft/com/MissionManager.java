@@ -52,6 +52,17 @@ public class MissionManager {
        return players;
     }
 
+    public static List<String> getPlayersInMissionregion(Mission m, String world){  // by uuid
+        List<String> players = new ArrayList<String>();
+        for (Player p : Bukkit.getWorld(world).getPlayers()){
+            Location l = p.getLocation();
+                if (m.isLocationInMissionRegion(l)){
+                    players.add(p.getUniqueId().toString());
+                }
+        }
+        return players;
+    }
+
     public static List<Mission> getAllMissions(){
         return missions;
     }
@@ -87,12 +98,16 @@ public class MissionManager {
     }
 
     public static Mission getRandomQueuedMission(){
+        Mission m;
+        do {
         int min = 0;
         int max = (queuedMissions.size() - 1);
         Random r = new Random();
         int randomInt = r.nextInt((max - min) + 1) + min;
+           m = queuedMissions.get(randomInt);
+        } while (m != null && !isMissionRegionActive(m));
 
-       return queuedMissions.get(randomInt);
+        return  m;
     }
 
     public static void messagePlayersInMission(Mission m, String message){
@@ -135,6 +150,14 @@ public class MissionManager {
         }
         return null;
     }
+    public static boolean isMissionRegionActive(Mission m){
+        for (Mission a : activeMissions){
+            if (a.getMissionRegion().toString().equalsIgnoreCase(m.toString())){
+                return true;
+            }
+        }
+        return false;
+    }
     public static void setMissionSpawnsToConfig(Mission m){
         List<String> strings = new ArrayList<String>();
         for (Location loc : m.getSpawns()){
@@ -154,6 +177,13 @@ public class MissionManager {
             m.end();
         }
     }
+    public static boolean isPlayerInMissionRegion(Mission m, Location loc){
+            if (m.isLocationInMissionRegion(loc)) {
+                return true;
+            }
+        return false;
+    }
+
     public static Mission isPlayerInActiveRegion(Location loc){
         for (Mission m : getActiveMissions()){
             if (m.isLocationInMissionRegion(loc)) {
@@ -162,6 +192,7 @@ public class MissionManager {
         }
         return null;
     }
+
 
     public static Mission isPlayerInAnyMisionRegion(Location loc){
         for (Mission m : getAllMissions()){

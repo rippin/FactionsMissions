@@ -39,6 +39,7 @@ public class Mission {
     private List<String> importantEntitiesUUID = new ArrayList<String>();
     private HashMap<String, Location> importantEntities = new HashMap<String, Location>(); //important entites have specific locations.
     private Map<LivingEntity, String> importantBarEntities = new HashMap<LivingEntity, String>();
+    private Map<String, Mob> mobs = new HashMap<String, Mob>();
     private int timeMissionLength = 600;
     private Map<String, String> secondForm = new HashMap<String, String>();
     private WorldEdit worldEdit;
@@ -85,9 +86,11 @@ public class Mission {
             e.printStackTrace();
         }
        if (getType() == MissionType.TIME){
-           //run task here
+           new TimeMissionLength(plugin, this, timeMissionLength).startCountdown(); //time
        }
        // runBarRepeatingTask(); //Run repeating bar task
+
+
     }
 
         public void end(){
@@ -100,6 +103,7 @@ public class Mission {
                     getCustomEntitiesUUID().clear();
                     getImportantEntitiesUUID().clear();
                     getImportantBarEntities().clear();
+                    getMobs().clear();
                    // removeBar(); // Remove boss bar
                 }
             }, 10L);
@@ -226,7 +230,7 @@ public class Mission {
 
         spawns = Utilss.getSpawns(MissionsConfig.getConfig().getStringList("Missions." + name + ".Spawns"));
         if (spawns == null || spawns.isEmpty()){
-            System.out.println("Spawns for " + name + "do not exist do /setspawn [name] to set a spawn ");
+            System.out.println("Spawns for " + name + " do not exist do /setspawn [name] to set a spawn ");
             holder.add("spawn");
         }
 
@@ -367,6 +371,14 @@ public class Mission {
         return importantEntities;
     }
 
+    public Map<String, Mob> getMobs() {
+        return mobs;
+    }
+
+    public void setMobs(Map<String, Mob> mobs) {
+        this.mobs = mobs;
+    }
+
     public void setImportantEntities(HashMap<String, Location> importantEntities) {
         this.importantEntities = importantEntities;
     }
@@ -442,9 +454,9 @@ public class Mission {
         removeUUIDSConfig();
    }
 
-    public void giveRewards(Player p){
+    public void giveRewards(String p){
         for (String s : rewards){
-            s = s.replace("%player%", p.getName());
+            s = s.replace("%player%", p);
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), s);
         }
     }

@@ -28,11 +28,12 @@ public class MissionCommands implements CommandExecutor {
         if (cmd.getName().equalsIgnoreCase("bullymission")){
             if (args.length == 0){
                 if (sender.isOp()) {
+                    sender.sendMessage(ChatColor.RED + "/bullymission create [mission]");
                 sender.sendMessage(ChatColor.RED + "/bullymission setspawn [mission]");
                 sender.sendMessage(ChatColor.RED + "/bullymission setImportantEntity [mission] [mob]");
                 sender.sendMessage(ChatColor.RED + "/bullymission setRegion [mission]");
-                sender.sendMessage(ChatColor.RED + "/bullymission forceStartMission [mission]");
-                    sender.sendMessage(ChatColor.RED + "/bullymission forceEndMission [mission]");
+                sender.sendMessage(ChatColor.RED + "/bullymission forceStart [mission]");
+                    sender.sendMessage(ChatColor.RED + "/bullymission forceEnd [mission]");
                     sender.sendMessage(ChatColor.RED + "/bullymission setSchematicLoc [mission]");
                     sender.sendMessage(ChatColor.RED + "/bullymission setMainPoint [mission]");
                     sender.sendMessage(ChatColor.RED + "/bullymission reload");
