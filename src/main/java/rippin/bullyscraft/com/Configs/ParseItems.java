@@ -7,6 +7,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -27,7 +28,7 @@ public class ParseItems {
     }
 
     //ITEM:QUANTITY NAME:name_space Data:data ENCHANT:Sharpness@5 Lore:lore|lore_lore | = space _ = new line
-    @SuppressWarnings("deprecated")
+    @SuppressWarnings("deprecation")
     public static ItemStack parseItems(String s){
         if (s.contains(" ")){
             String splitspace[] = s.split("\\s+");
@@ -78,6 +79,18 @@ public class ParseItems {
                     }
                     i.setItemMeta(meta);
                 }
+                else if (splitspace[j].toLowerCase().contains("Head".toLowerCase())){
+                    meta = i.getItemMeta();
+                    String splitHead[] = splitspace[j].split(":");
+                    if (i.getType() == Material.SKULL_ITEM){
+
+                        SkullMeta sMeta = (SkullMeta) meta;
+                        sMeta.setOwner(splitHead[1]);
+                        i.setItemMeta(sMeta);
+
+                    }
+
+                }
                 else if (splitspace[j].toLowerCase().contains("Enchant".toLowerCase())){
                     String splitEnchant[] = splitspace[j].split(":");
                     String splitLevel[] = splitEnchant[1].split("@");
@@ -99,11 +112,22 @@ public class ParseItems {
         }
         else{
             if (s.contains(":")){
+                if (s.substring(0,1).matches("[0-9]")){
+                    String split[] = s.split(":");
+                    return new ItemStack(Material.getMaterial(Integer.parseInt(split[0])), Integer.parseInt(split[1]));
+                }
+                else {
                 String split[] = s.split(":");
                 return new ItemStack(Material.getMaterial(split[0]), Integer.parseInt(split[1]));
+                }
             }
             else{
+                if (s.substring(0,1).matches("[0-9]")){
+                    return new ItemStack(Material.getMaterial(Integer.parseInt(s)));
+                }
+                else {
                 return new ItemStack(Material.getMaterial(s));
+                }
             }
         }
     }
@@ -296,5 +320,6 @@ public class ParseItems {
         }
         return false;
     }
+
 
 }
