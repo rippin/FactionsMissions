@@ -3,12 +3,14 @@ package rippin.bullyscraft.com;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import rippin.bullyscraft.com.Configs.Config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class TimeMissionLength {
 
@@ -33,6 +35,10 @@ public class TimeMissionLength {
             @Override
             public void run() {
                 //announce messages soon?
+                //cancel if mission is not active aka forceended
+                if (!MissionManager.isActiveMission(m.getName())){
+                    task.cancel();
+                }
                 List<String> names = new ArrayList<String>();
                 for (Player player : Bukkit.getWorld(MissionManager.getMissionWorld()).getPlayers()){
                 if (MissionManager.isPlayerInMissionRegion(m, player.getLocation())){
@@ -51,12 +57,12 @@ public class TimeMissionLength {
                 }
             if (hasEntered) {
                 if (delay % 20 == 0){
-                    m.spawnCustomEntities();
-                    MissionManager.messagePlayersInMission(m, Utilss.prefix + delay + " A new wave of mobs have been spawned");
+                    spawnMobsNearPlayers();
+                    MissionManager.messagePlayersInMission(m, Utilss.prefix + " A new wave of mobs have been spawned");
                 }
                 if (delay % 40 == 0){
                     m.spawnImportantEntities();
-                    MissionManager.messagePlayersInMission(m, Utilss.prefix + delay + " A new wave of mobs have been spawned");
+                    MissionManager.messagePlayersInMission(m, Utilss.prefix + " A new wave of mobs have been spawned");
                 }
                 if (delay % 30 == 0){
                     MissionManager.messagePlayersInMission(m, Utilss.prefix + delay + " seconds left to survive.");
@@ -66,22 +72,43 @@ public class TimeMissionLength {
                     MissionManager.messagePlayersInMission(m, Utilss.prefix + delay + " seconds left to survive.");
                 }
 
-                //WIN Pick a random person to give them the reward.
+                //WIN Give Everyone that survived a reward.
                 if (delay == 0) {
-                    List<String> n = MissionManager.getPlayersInMissionregion(m, MissionManager.getMissionWorld());
-                    int r = Utilss.randInt(0, n.size() -1);
+                    List<Player> n = MissionManager.getPlayersInMissionregionObject(m, MissionManager.getMissionWorld());
+                    for (Player p : n) {
                     //get random player in region at time of victory
-                    String s = n.get(r);
+                    String s = p.getName();
                     m.giveRewards(s);
-                    m.end(); //end that ish
                     Bukkit.broadcastMessage(Utilss.prefix + ChatColor.GOLD +  m.getName() + ChatColor.GRAY +
-                            " mission has been completed and " +  ChatColor.RED + s + " has been given the rewards.");
-
+                            " mission has been completed and the winners have been given the rewards.");
+                    }
+                    m.end(); //end that ish
                     task.cancel();
-                }
+                    }
+
                 --delay;
              }
             }
         }, 20L, 20L);
+    }
+
+    public void spawnMobsNearPlayers(){
+        List<Player> players = MissionManager.getPlayersInMissionregionObject(this.m, this.m.getWorld().getName());
+        for (Player p : players){
+            for (Location loc : m.getSpawns()){
+                if (p.getLocation().toVector().distance(loc.toVector())  <= 20 ){
+                    Random rand = new Random();
+                    int x = rand.nextInt(m.getCustomEntities().size());
+                    String mobName = m.getCustomEntities().get(x);
+                    Mob mob = MobsManager.getMob(mobName);
+                    mob.spawnMob(loc, m, "CustomEntity");
+                }
+
+            }
+
+
+
+        }
+
     }
 }

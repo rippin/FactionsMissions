@@ -4,6 +4,7 @@ package rippin.bullyscraft.com;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -23,6 +24,7 @@ public class MissionCommands implements CommandExecutor {
     public MissionCommands(FactionsMissions plugin){
         this.plugin = plugin;
     }
+    @SuppressWarnings("deprecation")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String s, String[] args) {
         if (cmd.getName().equalsIgnoreCase("bullymission")){
@@ -30,6 +32,7 @@ public class MissionCommands implements CommandExecutor {
                 if (sender.isOp()) {
                     sender.sendMessage(ChatColor.RED + "/bullymission create [mission]");
                 sender.sendMessage(ChatColor.RED + "/bullymission setspawn [mission]");
+                    sender.sendMessage(ChatColor.RED + "/bullymission showspawns [mission]");
                 sender.sendMessage(ChatColor.RED + "/bullymission setImportantEntity [mission] [mob]");
                 sender.sendMessage(ChatColor.RED + "/bullymission setRegion [mission]");
                 sender.sendMessage(ChatColor.RED + "/bullymission forceStart [mission]");
@@ -71,6 +74,35 @@ public class MissionCommands implements CommandExecutor {
            else {
                 sender.sendMessage(ChatColor.RED + "No perms.");
             }
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("showspawns")) {
+                if (sender.isOp()) {
+                    if (args.length == 2){
+                        if (sender instanceof Player) {
+                            Player p = (Player) sender;
+                            if (MissionManager.isMission(args[1])){
+                                Mission m = MissionManager.getMission(args[1]);
+                                for (Location loc : m.getSpawns()){
+                                    p.sendBlockChange(loc, Material.WOOL, (byte) 14);
+                                }
+                                p.sendMessage(ChatColor.DARK_RED + "Spawns are showed now.");
+                            }
+                            else{
+                                sender.sendMessage(ChatColor.RED + " That is not a mission.");
+                            }
+                        }
+                        else {
+                            sender.sendMessage(ChatColor.RED + "Only players can run this command.");
+                        }
+                    }
+                    else {
+                        sender.sendMessage("Wrong arguments.");
+                    }
+                }
+                else {
+                    sender.sendMessage(ChatColor.RED + "No perms.");
+                }
                 return true;
             }
             else if (args[0].equalsIgnoreCase("spawnMob")){

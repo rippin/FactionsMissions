@@ -25,9 +25,15 @@ public class MissionManager {
     private static String missionWorld = Config.getConfig().getString("Mission-World");
 
     public static void loadMissions(FactionsMissions plugin){
-
+        missionWorld = Config.getConfig().getString("Mission-World");
+        revertMissions = MissionsConfig.getConfig().getStringList("Active-Missions");
+        teleportworldMessage = ChatColor.translateAlternateColorCodes('&', Config.getConfig().getString("World-Teleport-Message"));
+        pasteSchematic = Config.getConfig().getBoolean("Paste-Schematics");
         missions.clear();
-    //    try {
+        queuedMissions.clear();
+        activeMissions.clear();
+
+        //    try {
         for (String key : MissionsConfig.getConfig().getConfigurationSection("Missions").getKeys(false)){
             Mission m = new Mission(key);
             getAllMissions().add(m);
@@ -52,13 +58,24 @@ public class MissionManager {
        return players;
     }
 
-    public static List<String> getPlayersInMissionregion(Mission m, String world){  // by uuid
+    public static List<String> getPlayersInMissionregionUUID(Mission m, String world){  // by uuid
         List<String> players = new ArrayList<String>();
         for (Player p : Bukkit.getWorld(world).getPlayers()){
             Location l = p.getLocation();
                 if (m.isLocationInMissionRegion(l)){
                     players.add(p.getUniqueId().toString());
                 }
+        }
+        return players;
+    }
+
+    public static List<Player> getPlayersInMissionregionObject(Mission m, String world){  // by uuid
+        List<Player> players = new ArrayList<Player>();
+        for (Player p : Bukkit.getWorld(world).getPlayers()){
+            Location l = p.getLocation();
+            if (m.isLocationInMissionRegion(l)){
+                players.add(p);
+            }
         }
         return players;
     }

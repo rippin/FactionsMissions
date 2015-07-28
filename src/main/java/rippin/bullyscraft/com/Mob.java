@@ -39,6 +39,7 @@ public class Mob {
     private double projectileDamage;
     private List<String> abilities = new ArrayList<String>();
     private List<ItemStack> drops = new ArrayList<ItemStack>();
+    private boolean boss = false;
     public static List<MinionSpawnCountdown> msc = new ArrayList<MinionSpawnCountdown>();
     public Mob(String name){
         this.name = name;
@@ -56,6 +57,9 @@ public class Mob {
         potions = ParseItems.parsePotions(config.getStringList("Mobs." + name + ".Potions"));
        if (config.getStringList("Mobs." + name + ".Drops") != null){
            drops = ParseItems.getAllItems(config.getStringList("Mobs." + name + ".Drops"));
+       }
+       if (config.getBoolean("Mobs." + name + ".Boss")){
+           boss = true;
        }
 
         if (config.getStringList("Mobs." + name + ".Abilities") != null){
@@ -316,5 +320,11 @@ public class Mob {
         this.abilities = abilities;
     }
 
+    public boolean isBoss() {
+        return boss;
+    }
 
+    public void setBoss(boolean boss) {
+        this.boss = boss;
+    }
 }

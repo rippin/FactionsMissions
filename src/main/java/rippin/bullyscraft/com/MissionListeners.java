@@ -1,13 +1,13 @@
 package rippin.bullyscraft.com;
 
 import org.bukkit.*;
-import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
@@ -20,6 +20,7 @@ import rippin.bullyscraft.com.Configs.MissionsConfig;
 import rippin.bullyscraft.com.Configs.MobsConfig;
 import rippin.bullyscraft.com.Events.MobSpawnEvent;
 
+
 import java.util.*;
 
 
@@ -27,8 +28,10 @@ public class MissionListeners implements Listener {
     private FactionsMissions plugin;
     private int taskID;
     private int cicleTaskid;
-    private int bossTaskID;
+    private int iceBossTaskID;
+    private int stompTaskID;
     private int fireworkTaskID;
+    private int stompTaskIDInside;
     public MissionListeners(FactionsMissions plugin){
         this.plugin = plugin;
     }
@@ -74,9 +77,10 @@ public class MissionListeners implements Listener {
             if (MissionManager.getMissionWorld().equalsIgnoreCase(event.getEntity().getLocation().getWorld().getName())){
                 if (MobsManager.isInReplaceEntUUID(uuid)){
                    Mob repl = MobsManager.removeReplaceEntUUID(uuid);
-                    event.getDrops().clear();
+
                     if (!repl.getDrops().isEmpty()) {
-                        event.getDrops().addAll(repl.getDrops());
+                        event.getDrops().clear();
+                      event.getDrops().addAll(repl.getDrops());
                     }
                 }
           }
@@ -137,8 +141,6 @@ public class MissionListeners implements Listener {
                            m.giveRewards(p.getName());
                            Bukkit.broadcastMessage(Utilss.prefix + "Players have eliminated all mobs from the " + m.getName() + " mission.");
                            if (MissionManager.pasteSchematic()) {
-                           MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
-                                   "reverted in 3 minutes, please leave to prevent suffocation damage.");
                                plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
                                    @Override
                                    public void run() {
@@ -169,6 +171,23 @@ public class MissionListeners implements Listener {
                                 --i;
                                }
                         },1L, 20L);
+                    }
+                }
+            else if (m.getType() == MissionType.BOSS){
+                    Mob boss = MobsManager.getMob(m.getName());
+                    if (boss.isBoss()){
+                       Bukkit.broadcastMessage(ChatColor.GREEN + "The Boss in mission " + m.getName() + " has been defeated.");
+                        if (event.getEntity().getKiller() instanceof Player){
+                        m.giveRewards(event.getEntity().getKiller().getName());
+                        }
+                        else{
+                            List<Player> players = MissionManager.getPlayersInMissionregionObject(m, MissionManager.getMissionWorld());
+
+                            Player randPlayer = players.get(Utilss.randInt(0, players.size() -1));
+                            MissionManager.messagePlayersInMission(m, "&4Killer not found, a random player in the region will be rewarded.");
+                            m.giveRewards(randPlayer.getName());
+                        }
+                        m.end();
                     }
                 }
             }
@@ -251,18 +270,8 @@ public class MissionListeners implements Listener {
                         final Mission finalMission = m;
                         Bukkit.broadcastMessage(Utilss.prefix + ((Player) event.getEntity()).getName() + " was damaged and spy mission " + m.getName()
                                 + " was failed.");
-                        if (m.getRevertSchematic() != null) {
-                        MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
-                                "reverted in 3 minutes, please leave to prevent suffocation damage.");
-                        plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-                            @Override
-                            public void run() {
-                                MissionManager.messagePlayersInMission(finalMission, "&4Rolling back area now, you were warned...");
-                                finalMission.end();
-                                return;
-                            }
-                        },1200L);
-                     }
+                        finalMission.end();
+
                     }
                    }
                 }
@@ -273,16 +282,7 @@ public class MissionListeners implements Listener {
                     m.setStatus(MissionStatus.ENDING);
                     Bukkit.broadcastMessage(Utilss.prefix + ((Player) event.getEntity()).getName() + " was damaged and spy mission " + m.getName()
                     + " was failed.");
-                    MissionManager.messagePlayersInMission(finalMission, "&4The mission region you are in will be " +
-                            "reverted in 3 minutes, please leave to prevent suffocation damage.");
-                    plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-                        @Override
-                        public void run() {
-                            MissionManager.messagePlayersInMission(finalMission, "&4Rolling back area now, you were warned...");
-                            finalMission.end();
-                            return;
-                        }
-                    },1200L);
+                   finalMission.end();
                 }
               }
             }
@@ -448,7 +448,6 @@ public class MissionListeners implements Listener {
                 for (Entity e : c.getEntities()){
                     if (e instanceof  LivingEntity){
                     if (e.getUniqueId().toString().equalsIgnoreCase(split[0])){
-                            System.out.println("test");
                             e.remove();
                             it.remove();
                         }
@@ -463,11 +462,13 @@ public class MissionListeners implements Listener {
     public void onSpawn(CreatureSpawnEvent event){
         final Entity entity = event.getEntity();
        if (event.getEntity().getLocation().getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())) {
-        if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.CUSTOM){
+        if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.CUSTOM || entity.hasMetadata("CustomEntity")){
             if (MissionManager.getAllMissions() != null && !MissionManager.getAllMissions().isEmpty()){
                 for (Mission m : MissionManager.getAllMissions()){
                   if  (m.isLocationInMissionRegion(event.getLocation())){
                       event.setCancelled(true);
+                      return;
+
                   }
                 }
             }
@@ -488,20 +489,66 @@ public class MissionListeners implements Listener {
     @EventHandler
     public void onMobSpawn(final MobSpawnEvent event){
         if (event.getMob().getAbilities().contains("ICEBOSS")){
-            bossTaskID =   plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+            iceBossTaskID =   plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
                 @Override
                 public void run() {
                     if (event.getEntity() != null && !event.getEntity().isDead()){
                         iceBossMethod(event.getEntity());
                     }
                     else {
-                        Bukkit.getScheduler().cancelTask(bossTaskID);
+                        Bukkit.getScheduler().cancelTask(iceBossTaskID);
                     }
                 }
             },1L, 40L);
         }
+       else if (event.getMob().getAbilities().contains("STOMP")){
+            stompAbility(event.getEntity());
+        }
     }
 
+    public void stompAbility(final Entity ent){
+        stompTaskID =   plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+            int i = 0;
+            int r = Utilss.randInt(8, 15);
+            @Override
+            public void run() {
+                if (ent != null && !ent.isDead()){
+                    if (i >= r){
+                        ent.setVelocity(ent.getVelocity().add(new Vector(ent.getVelocity().getX(), 1.5,ent.getVelocity().getY())));
+                     r = Utilss.randInt(8, 15);
+                   //check if ent is in ground
+              stompTaskIDInside = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+                            @Override
+                            public void run() {
+                                if (ent == null || ent.isDead()){
+                                    Bukkit.getScheduler().cancelTask(stompTaskIDInside);
+                                }
+                                else if (ent.isOnGround()){
+                                    //get nearby players and hurt/do w/e
+                                    List<Player> players = Utilss.getNearbyPlayers(ent);
+                                    ent.getWorld().playEffect(ent.getLocation().add(0,1.5, 0),Effect.SMOKE, 30);
+                                    for (Player player : players){
+                                      if (((Entity)player).isOnGround()){
+                                        player.setVelocity(player.getVelocity().add(new Vector(player.getVelocity().getX(), 1.5, player.getVelocity().getY())));
+                                      player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,120,2));
+                                      }
+                                    }
+
+                                    Bukkit.getScheduler().cancelTask(stompTaskIDInside);
+                                }
+                            }
+                        },5L, 5L);
+                        i = 0;
+                    }
+                }
+                else {
+                    Bukkit.getScheduler().cancelTask(stompTaskID);
+                }
+
+            ++i;
+            }
+        },1L, 20L);
+    }
     public void iceBossMethod(Entity entity){
        List<Entity> ents = entity.getNearbyEntities(30, 12, 30);
        for (Entity ent : ents){
@@ -561,7 +608,7 @@ public class MissionListeners implements Listener {
         }
       }
     }
-
+/*
 
     @SuppressWarnings("deprecation")
     @EventHandler
@@ -593,4 +640,15 @@ public class MissionListeners implements Listener {
             event.setCancelled(true);
         }
     }
+    */
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event){
+
+        if (MissionManager.isPlayerInActiveRegion(event.getPlayer().getLocation()) != null){
+            event.getPlayer().teleport(Bukkit.getWorld(MissionManager.getMissionWorld()).getSpawnLocation());
+        }
+    }
+
+
 }

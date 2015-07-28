@@ -10,6 +10,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -69,6 +70,26 @@ public class Utilss {
         int randomNum = rand.nextInt((max - min) + 1) + min;
 
         return randomNum;
+    }
+
+    public static List<Player> getNearbyPlayers(Entity ent) {
+        List<Player> players = new ArrayList<Player>();
+        for (Entity entity : ent.getNearbyEntities(20, 15, 20)){
+            if (entity instanceof Player){
+                players.add((Player)entity);
+            }
+        }
+        return players;
+    }
+
+    public static List<Player> getNearbyPlayers(Player player) {
+        List<Player> players = new ArrayList<Player>();
+        for (Entity entity : player.getNearbyEntities(20, 15, 20)){
+            if (entity instanceof Player){
+                players.add((Player)entity);
+            }
+        }
+        return players;
     }
 
 }

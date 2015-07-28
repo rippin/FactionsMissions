@@ -54,7 +54,6 @@ public class MinionSpawnCountdown {
                            LivingEntity e = m.spawnMob(entity.getLocation(), null, "minion");
                            minionEntity.add(e);
                            alivenEntUUIDS.put(e.getUniqueId().toString(), m);
-                           System.out.println(entity.getUniqueId().toString() + " spawned");
                            ++i;
                        }
                    }

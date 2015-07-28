@@ -9,13 +9,11 @@ import com.sk89q.worldedit.data.DataException;
 import com.sk89q.worldedit.schematic.SchematicFormat;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import me.confuser.barapi.BarAPI;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import rippin.bullyscraft.com.Configs.MissionsConfig;
@@ -127,6 +125,16 @@ public class Mission {
                     if (!MissionManager.containsMission(MissionManager.getActiveMissions(), getName())){
                         MissionManager.getQueuedMissions().add(m);
                     }
+            MissionManager.messagePlayersInMission(this, "&4&lYou have 5 minutes to leave the mission area or you will be teleported to spawn.");
+            plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    for (Player p : MissionManager.getPlayersInMissionregionObject(m, MissionManager.getMissionWorld())){
+                        p.sendMessage(ChatColor.RED + "Teleporting to spawn...");
+                        p.teleport(Bukkit.getWorld("world").getSpawnLocation(), PlayerTeleportEvent.TeleportCause.PLUGIN);
+                    }
+                }
+            },(5*60 * 20));
                      setStatus(MissionStatus.INACTIVE);
                 }
     public void pasteSchematic(File schematic) throws IOException, WorldEditException {
