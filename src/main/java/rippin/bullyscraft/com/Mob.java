@@ -211,10 +211,12 @@ public class Mob {
       }
         if (metadata.equalsIgnoreCase("minion")){
             ent.setMetadata(metadata, new FixedMetadataValue(plugin, ""));
+            ent.setRemoveWhenFarAway(true);
         }
         else {
             if (metadata.equalsIgnoreCase("ReplaceEntity")){
                 MobsManager.addReplaceEntityUUIDToListAndFile(ent.getUniqueId().toString(), name);
+                ent.setRemoveWhenFarAway(true);
             }
         }
         MobSpawnEvent mse = new MobSpawnEvent(this, ent, CreatureSpawnEvent.SpawnReason.CUSTOM);
