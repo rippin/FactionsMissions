@@ -306,6 +306,9 @@ public class MissionManager {
     }
 
     public static void printActiveMissionsInfo(CommandSender sender){
+        sender.sendMessage(ChatColor.GOLD + "" +
+                ChatColor.STRIKETHROUGH+ "-----------" + ChatColor.DARK_RED + " Active Missions "
+                + ChatColor.GOLD + "" + ChatColor.STRIKETHROUGH+ "-----------");
         for (Mission m : getActiveMissions()){
             if (getActiveMissions().isEmpty()){
                 sender.sendMessage(ChatColor.DARK_RED + "There are no active missions at the moment, check back later.");
