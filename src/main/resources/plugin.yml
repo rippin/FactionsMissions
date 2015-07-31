@@ -8,3 +8,4 @@ softdepend: [Clearlagg, AsyncWorldEdit]
 commands:
   bullymission:
     usage: Command for Bully Mission.
+    aliases: [/missions, /bullymissions]
