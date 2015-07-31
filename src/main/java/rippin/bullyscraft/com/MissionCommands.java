@@ -43,7 +43,7 @@ public class MissionCommands implements CommandExecutor {
                     sender.sendMessage(ChatColor.RED + "/bullymission clearRList | crl to clear replace mobs list.");
                 }
                 else {
-                    sender.sendMessage(ChatColor.RED + "No perms");
+                    sender.sendMessage(ChatColor.RED + "/bullymission list | Lists active missions");
                 }
                 return true;
             }
@@ -75,6 +75,14 @@ public class MissionCommands implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "No perms.");
             }
                 return true;
+            }
+            else if (args[0].equalsIgnoreCase("list")){
+                if (args.length == 1){
+                    MissionManager.printActiveMissionsInfo(sender);
+                }
+                else {
+                    sender.sendMessage("Wrong arguments.");
+                }
             }
             else if (args[0].equalsIgnoreCase("showspawns")) {
                 if (sender.isOp()) {
