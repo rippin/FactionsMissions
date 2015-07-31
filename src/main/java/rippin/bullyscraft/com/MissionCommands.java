@@ -304,11 +304,12 @@ public class MissionCommands implements CommandExecutor {
                         if (MissionManager.isQueuedMission(args[1])){
                             Mission m = MissionManager.getMission(args[1]);
                             m.start();
-                            double x = m.getMainPoint().getX();
-                            double y = m.getMainPoint().getY();
-                            double z = m.getMainPoint().getZ();
+                            int x = ((Double) m.getMainPoint().getX()).intValue();
+                            int y = ((Double) m.getMainPoint().getY()).intValue();
+                            int z = ((Double) m.getMainPoint().getZ()).intValue();
+
                             Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', Config.getConfig().getString("BroadcastMessage")).replace("%name%", m.getName())
-                                    .replace("%type%", m.getType().getValue()).replace("%coords%", "X: " + x + "Y: " + y + "Z: " + z));
+                                    .replace("%type%", m.getType().getValue()).replace("%coords%", " X: " + x + " Y: " + y + " Z: " + z));
                                 p.sendMessage(Utilss.prefix + "Mission " + m.getName() + " has been force started.");
                         }
                         else {
