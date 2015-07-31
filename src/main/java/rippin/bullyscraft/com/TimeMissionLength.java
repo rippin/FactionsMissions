@@ -62,7 +62,6 @@ public class TimeMissionLength {
                 }
                 if (delay % 40 == 0){
                     m.spawnImportantEntities();
-                    MissionManager.messagePlayersInMission(m, Utilss.prefix + " A new wave of mobs have been spawned");
                 }
                 if (delay % 30 == 0){
                     MissionManager.messagePlayersInMission(m, Utilss.prefix + delay + " seconds left to survive.");
