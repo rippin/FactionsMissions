@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import rippin.bullyscraft.com.Configs.Config;
 import rippin.bullyscraft.com.Configs.MissionsConfig;
@@ -302,6 +303,24 @@ public class MissionManager {
                     chunk.load();
                 }
             }
+    }
+
+    public static void printActiveMissionsInfo(CommandSender sender){
+        for (Mission m : getActiveMissions()){
+            if (getActiveMissions().isEmpty()){
+                sender.sendMessage(ChatColor.DARK_RED + "There are no active missions at the moment, check back later.");
+            }
+            else {
+                int x = ((Double) m.getMainPoint().getX()).intValue();
+                int y = ((Double) m.getMainPoint().getY()).intValue();
+                int z = ((Double) m.getMainPoint().getZ()).intValue();
+
+                sender.sendMessage(ChatColor.GRAY + "Mission: " +
+                        ChatColor.GREEN + m.getName() + ChatColor.GRAY + " Type: " + ChatColor.GREEN + m.getType().getValue()
+                        + ChatColor.GRAY + " Coords: " + "X " + ChatColor.GREEN + x + "Y: " + y + "Z: " + z);
+            }
+
+        }
     }
 
     public static String getTeleportworldMessage() {
