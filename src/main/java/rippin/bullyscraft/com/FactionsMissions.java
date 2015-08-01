@@ -32,6 +32,8 @@ public class FactionsMissions extends JavaPlugin{
         if (Config.getConfig().getInt("Mission-Delay") > 0 && Config.getConfig().getBoolean("Mission-Task")) {
         new StartMissionCountdown(this, Config.getConfig().getInt("Mission-Delay")).startCountdown();
         }
+        //set night time
+        Utilss.setNight(this, MissionManager.getMissionWorld());
     }
 
     @Override
