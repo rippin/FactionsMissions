@@ -10,6 +10,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -91,5 +92,12 @@ public class Utilss {
         }
         return players;
     }
-
+    public static void setNight(FactionsMissions plugin, final String world){
+        plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
+            @Override
+            public void run() {
+                Bukkit.getServer().getWorld(world).setTime(14000);
+            }
+        },1L, (400*20L));
+    }
 }
