@@ -47,7 +47,7 @@ public class ProjectileLaunchCountdown {
             List<Entity> ents = entity.getNearbyEntities(12, 7, 12);
             for (Entity player : ents){
                 if (player instanceof Player){
-                    Location loc = entity.getLocation().add(0, 3.1, 0).clone();
+                    Location loc = entity.getLocation().add(0, 3.15, 0).clone();
                     org.bukkit.util.Vector to = player.getLocation().toVector().clone();
                     org.bukkit.util.Vector from = loc.toVector().clone();
                     org.bukkit.util.Vector vel = to.subtract(from).normalize();
