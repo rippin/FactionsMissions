@@ -95,7 +95,6 @@ public class MissionListeners implements Listener {
                     event.getDrops().addAll(mob.getDrops());
                 }
                 m.getCustomEntitiesUUID().remove(uuid);
-                m.getMobs().remove(uuid);
             }
             else if(m.getImportantEntitiesUUID().contains(uuid)) {
                 Mob mob = m.getMobs().get(uuid);
@@ -105,7 +104,6 @@ public class MissionListeners implements Listener {
                 }
                 m.getImportantEntitiesUUID().remove(uuid);
                 removeImportantBarEntities(m,uuid);
-                m.getMobs().remove(uuid);
 
             }
 
@@ -174,7 +172,7 @@ public class MissionListeners implements Listener {
                     }
                 }
             else if (m.getType() == MissionType.BOSS){
-                    Mob boss = m.getMobs().get(event.getEntity().getUniqueId().toString());
+                    Mob boss = m.getMobs().get(uuid);
                     if (boss.isBoss()){
                        Bukkit.broadcastMessage(ChatColor.GREEN + "The Boss in mission " + m.getName() + " has been defeated.");
                         if (event.getEntity().getKiller() instanceof Player){
@@ -190,6 +188,7 @@ public class MissionListeners implements Listener {
                         m.end();
                     }
                 }
+            m.getMobs().remove(uuid); // remove UUID of mob here
             }
         }
 
