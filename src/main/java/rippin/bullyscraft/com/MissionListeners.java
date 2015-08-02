@@ -174,7 +174,7 @@ public class MissionListeners implements Listener {
                     }
                 }
             else if (m.getType() == MissionType.BOSS){
-                    Mob boss = MobsManager.getMob(m.getName());
+                    Mob boss = m.getMobs().get(event.getEntity().getUniqueId().toString());
                     if (boss.isBoss()){
                        Bukkit.broadcastMessage(ChatColor.GREEN + "The Boss in mission " + m.getName() + " has been defeated.");
                         if (event.getEntity().getKiller() instanceof Player){
