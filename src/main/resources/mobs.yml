@@ -4,16 +4,150 @@
 Mobs:
   SuperZombie:
     Important: false
-    Important-Health-Bar: false
-    Health: 25
-    DisplayName: ''
-    Weapon:
+    Type: ZOMBIE
+    Health: 35
+    DisplayName: '&4&lSuperZombie'
+    Weapon: DIAMOND_SWORD:1 Enchant:Sharpness@15 Lore:Freezer|I
     Armor:
-    -
+    - DIAMOND_BOOTS Enchant:PROTECTION@4
+    - DIAMOND_LEGGINGS Enchant:PROTECTION@4
+    - DIAMOND_CHESTPLATE Enchant:PROTECTION@4
+    - DIAMOND_HELMET Enchant:PROTECTION@4
     Potions:
-    -
+    - Regeneration:1000000:1
+    - Strength:1000000:1
+    - SPEED:1000000:2
+  StrongZombie:
+    Important: false
+    Type: ZOMBIE
+    Health: 20
+    DisplayName: '&cStrong Zombie'
+    Weapon: DIAMOND_SWORD:1 Enchant:Sharpness@2
+    Armor:
+    - IRON_LEGGINGS Enchant:PROTECTION@4
+    - IRON_CHESTPLATE Enchant:PROTECTION@4
+    Potions:
+    - Regeneration:1000000:1
+    - SPEED:1000000:2
+  StrongSkeleton:
+    Important: false
+    Type: SKELETON
+    Health: 20
+    DisplayName: '&cStrong Zombie'
+    Weapon: BOW:1 Enchant:Power@3 Enchant:Infinity@1 Enchant:Flame@2
+    Armor:
+    - LEATHER_LEGGINGS Enchant:PROTECTION@4
+    - LEATHER_HELMET Enchant:PROTECTION@4
+    Potions:
+    - Regeneration:1000000:1
+    - SPEED:1000000:1
+  StrongPigZombie:
+    Important: false
+    Type: PIG_ZOMBIE
+    Health: 20
+    DisplayName: '&cStrong Pigman'
+    Weapon: DIAMOND_SWORD:1 Enchant:Sharpness@3 Enchant:FireAspect@2
+    Armor:
+    - LEATHER_LEGGINGS Enchant:PROTECTION@4
+    - LEATHER_HELMET Enchant:PROTECTION@4
+    Potions:
+    - Regeneration:1000000:1
+    - Strength:1000000:1
+    - SPEED:1000000:2
+  SuperSkelly:
+    Type: SKELETON
+    Important: false
+    Health: 35
+    DisplayName: '&4&lSuperSkelly'
+    Weapon: BOW:1 Enchant:Infinity@1 Lore:Snowball|I
+    Armor:
+    - DIAMOND_BOOTS Enchant:PROTECTION@4
+    - DIAMOND_LEGGINGS Enchant:PROTECTION@4
+    - DIAMOND_CHESTPLATE Enchant:PROTECTION@4
+    - DIAMOND_HELMET Enchant:PROTECTION@4
+    Potions:
+    - Regeneration:1000000:1
+  InvisBat:
+    Type: BAT
+    Health: 7
+    Potions:
+    - INVISIBILITY:1000000:10
+  FlyingWitherSkeleton:
+    Type: SKELETON
+    Important: false
+    Vehicle: InvisBat
+    Health: 25
+    DisplayName: '&4&lWither Ghost'
+    Weapon: BOW:1 Enchant:Infinity@1 Lore:Wither|I
+    Armor:
+    - AIR
+    - AIR
+    - LEATHER_CHESTPLATE:1 LeatherColor:Black
+    - SKULL_ITEM Data:1
+    Potions:
+    - FIRERESISTANCE:1000000:3
+    - INVISIBILITY:1000000:10
+  SuperGIANT:
+    Type: GIANT
+    Important: true
+    Health: 200
+    SecondForm: ICEBOSS
+    DisplayName: '&4&lSuperGIANTZombie'
+    Weapon: DIAMOND_SWORD:1 Enchant:SHARPNESS@10
+    Potions:
+    - Regeneration:1000000:3
+    - Strength:1000000:2
+  ICEBOSS:
+    Type: ZOMBIE
+    Weapon: DIAMOND_SWORD:1 Enchant:Sharpness@10 Lore:Freezer|I
+    Armor:
+    - DIAMOND_BOOTS Enchant:PROTECTION@4
+    - DIAMOND_LEGGINGS Enchant:PROTECTION@4
+    - DIAMOND_CHESTPLATE Enchant:PROTECTION@4
+    - DIAMOND_HELMET Enchant:PROTECTION@4
+    Potions:
+    - Regeneration:1000000:1
+    - SPEED:1000000:1
+    DisplayName: '&b&lICEBOSS'
+    Health: 100
+  Wither:
+    Important: false
+    Type: WITHER
+  KillerRabbit:
+    Important: false
+    Type: KILLER_RABBIT
+    Health: 18
+  CaveSpider:
+    Important: false
+    Type: CAVE_SPIDER
+    Health: 18
+    Projectile:
+      Type: Arrow
+      Delay: 6
+      Damage: 1
+      Velocity: 5.0
+      Potions:
+      - Poison:80:0
+  ChargedCreeper:
+    Important: false
+    Type: LIGHTNING_CREEPER
+    Health: 20
     Drops:
-    -
-
+    - SULPHUR:5
+    - TNT:1
+  ElderGuardian:
+    Important: false
+    Type: ELDER_GUARDIAN
+  WitherSkeleton:
+    Important: false
+    Type: WITHER_SKELETON
 Replace-Mobs-In-Mission-World:
-  - 'Entity:MissionMob:10%'
+- WOLF:FlyingWitherSkeleton@100
+- SHEEP:KillerRabbit@100
+- PIG:ChargedCreeper@100
+- COW:StrongSkeleton@50
+- COW:StrongPigZombie@100
+- CHICKEN:StrongZombie@100
+- RABBIT:WitherSkeleton@100
+- SPIDER:CaveSpider@100
+Alive-Mobs-Replaced:
