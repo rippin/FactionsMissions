@@ -486,13 +486,15 @@ public class MissionListeners implements Listener {
      }
   }
     @EventHandler
-    public void onMobSpawn(final MobSpawnEvent event){
+    public void onMobSpawn(MobSpawnEvent event){
+        final Entity entity = event.getEntity();
         if (event.getMob().getAbilities().contains("ICEBOSS")){
             iceBossTaskID =   plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+                Entity ent = entity;
                 @Override
                 public void run() {
-                    if (event.getEntity() != null && !event.getEntity().isDead()){
-                        iceBossMethod(event.getEntity());
+                    if (ent != null && !ent.isDead()){
+                        iceBossMethod(ent);
                     }
                     else {
                         Bukkit.getScheduler().cancelTask(iceBossTaskID);
@@ -505,8 +507,9 @@ public class MissionListeners implements Listener {
         }
     }
 
-    public void stompAbility(final Entity ent){
+    public void stompAbility(final Entity entity){
         stompTaskID =   plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+            Entity ent = entity;
             int i = 0;
             int r = Utilss.randInt(8, 15);
             @Override
