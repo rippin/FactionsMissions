@@ -67,9 +67,11 @@ public class Mission {
             if (MissionManager.pasteSchematic()) {
             pasteSchematic(schematic); //Mobs are now spawned in this method.
             } else {
+                if (!(getType() == MissionType.TIME)){
                 spawnCustomEntities();
                 spawnImportantEntities();
                 setUUIDSToConfig();
+                }
             }
             if (!MissionManager.containsMission(MissionManager.getActiveMissions(), this.getName())){
                 MissionManager.getActiveMissions().add(this);
