@@ -65,7 +65,7 @@ public class Mission {
         MissionManager.loadChunksinRegion(this);
         try {
             if (MissionManager.pasteSchematic()) {
-            pasteSchematic(schematic); //Mobs are now spawned in this method.
+            pasteSchematic(schematic);
             } else {
                 if (!(getType() == MissionType.TIME)){
                 spawnCustomEntities();
