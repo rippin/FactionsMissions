@@ -215,9 +215,17 @@ public class MissionManager {
     public static Mission isPlayerInAnyMisionRegion(Location loc){
         for (Mission m : getAllMissions()){
             if (m.isLocationInMissionRegion(loc)) {
-                return m;
+                if (m.getStatus() == MissionStatus.ACTIVE){
+                    return m;
+                }
             }
         }
+               for (Mission m : getAllMissions()){
+               if (m.isLocationInMissionRegion(loc)) {
+                return m;
+               }
+        }
+
         return null;
     }
 
