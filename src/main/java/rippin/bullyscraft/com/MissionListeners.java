@@ -9,15 +9,14 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import rippin.bullyscraft.com.Configs.MissionsConfig;
-import rippin.bullyscraft.com.Configs.MobsConfig;
 import rippin.bullyscraft.com.Events.MobSpawnEvent;
 
 
@@ -29,9 +28,9 @@ public class MissionListeners implements Listener {
     private int taskID;
     private int cicleTaskid;
     private int iceBossTaskID;
-    private int stompTaskID;
+    private BukkitTask stompTaskID;
     private int fireworkTaskID;
-    private int stompTaskIDInside;
+    private BukkitTask stompTaskIDInside;
     public MissionListeners(FactionsMissions plugin){
         this.plugin = plugin;
     }
@@ -437,26 +436,7 @@ public class MissionListeners implements Listener {
         }
        }
     }
-    @EventHandler
-    public void chunkLoad(ChunkLoadEvent event){
-        if (event.getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())){
-            Chunk c = event.getChunk();
-            ListIterator<String> it = MobsManager.getReplaceEntUUIDS().listIterator();
-            while (it.hasNext()){
-                String split[] = it.next().split(":");
-                for (Entity e : c.getEntities()){
-                    if (e instanceof  LivingEntity){
-                    if (e.getUniqueId().toString().equalsIgnoreCase(split[0])){
-                            e.remove();
-                            it.remove();
-                        }
-                    }
-                }
-             }
-            MobsConfig.getConfig().set("Alive-Mobs-Replaced", MobsManager.getReplaceEntUUIDS());
-            MobsConfig.saveFile();
-            }
-    }
+
     @EventHandler
     public void onSpawn(CreatureSpawnEvent event){
         final Entity entity = event.getEntity();
@@ -508,48 +488,48 @@ public class MissionListeners implements Listener {
     }
 
     public void stompAbility(final Entity entity){
-        stompTaskID =   plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+        stompTaskID =   plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
             Entity ent = entity;
             int i = 0;
             int r = Utilss.randInt(8, 15);
+
             @Override
             public void run() {
-                if (ent != null && !ent.isDead()){
-                    if (i >= r){
-                        ent.setVelocity(ent.getVelocity().add(new Vector(ent.getVelocity().getX(), 1.5,ent.getVelocity().getY())));
-                     r = Utilss.randInt(8, 15);
-                   //check if ent is in ground
-              stompTaskIDInside = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+                if (ent != null && !ent.isDead()) {
+                    if (i >= r) {
+                        ent.setVelocity(ent.getVelocity().add(new Vector(ent.getVelocity().getX(), 1.5, ent.getVelocity().getY())));
+                        r = Utilss.randInt(8, 15);
+                        //check if ent is in ground
+                        stompTaskIDInside = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
+                            Entity entInside = ent;
                             @Override
                             public void run() {
-                                if (ent == null || ent.isDead()){
-                                    Bukkit.getScheduler().cancelTask(stompTaskIDInside);
-                                }
-                                else if (ent.isOnGround()){
+                                if (entInside == null || entInside .isDead()) {
+                                    stompTaskIDInside.cancel();
+                                } else if (entInside .isOnGround()) {
                                     //get nearby players and hurt/do w/e
-                                    List<Player> players = Utilss.getNearbyPlayers(ent);
-                                    ent.getWorld().playEffect(ent.getLocation().add(0,1.5, 0),Effect.SMOKE, 30);
-                                    for (Player player : players){
-                                      if (((Entity)player).isOnGround()){
-                                        player.setVelocity(player.getVelocity().add(new Vector(player.getVelocity().getX(), 1.5, player.getVelocity().getY())));
-                                      player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,120,2));
-                                      }
+                                    List<Player> players = Utilss.getNearbyPlayers(entInside );
+                                    entInside .getWorld().playEffect(entInside .getLocation().add(0, 1.5, 0), Effect.SMOKE, 30);
+                                    for (Player player : players) {
+                                        if (((Entity) player).isOnGround()) {
+                                            player.setVelocity(player.getVelocity().add(new Vector(player.getVelocity().getX(), 1.5, player.getVelocity().getY())));
+                                            player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 120, 2));
+                                        }
                                     }
 
-                                    Bukkit.getScheduler().cancelTask(stompTaskIDInside);
+                                    stompTaskIDInside.cancel();
                                 }
                             }
-                        },5L, 5L);
+                        }, 5L, 5L);
                         i = 0;
                     }
-                }
-                else {
-                    Bukkit.getScheduler().cancelTask(stompTaskID);
+                } else {
+                    stompTaskID.cancel();
                 }
 
-            ++i;
+                ++i;
             }
-        },1L, 20L);
+        }, 1L, 20L);
     }
     public void iceBossMethod(Entity entity){
        List<Entity> ents = entity.getNearbyEntities(30, 12, 30);
