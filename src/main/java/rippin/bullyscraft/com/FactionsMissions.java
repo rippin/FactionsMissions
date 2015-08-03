@@ -6,6 +6,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import rippin.bullyscraft.com.Configs.Config;
 import rippin.bullyscraft.com.Configs.ConfigManager;
+import rippin.bullyscraft.com.Configs.MobsConfig;
 
 import java.util.logging.Logger;
 
@@ -39,6 +40,8 @@ public class FactionsMissions extends JavaPlugin{
     @Override
     public void onDisable() {
        instance = null;
+       MobsManager.clearReplaceEntUUIDs();
+        MobsConfig.saveFile();
     }
 
     public WorldGuardPlugin getWorldGuard() {
