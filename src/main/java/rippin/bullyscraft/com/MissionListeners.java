@@ -509,7 +509,7 @@ public class MissionListeners implements Listener {
                                 } else if (entInside .isOnGround()) {
                                     //get nearby players and hurt/do w/e
                                     List<Player> players = Utilss.getNearbyPlayers(entInside );
-                                    entInside .getWorld().playEffect(entInside .getLocation().add(0, 1.5, 0), Effect.SMOKE, 30);
+                                    entInside .getWorld().playEffect(entInside .getLocation().add(0, 1.5, 0), Effect.EXPLOSION, 30, 30);
                                     for (Player player : players) {
                                         if (((Entity) player).isOnGround()) {
                                             player.setVelocity(player.getVelocity().add(new Vector(player.getVelocity().getX(), 1.5, player.getVelocity().getY())));
