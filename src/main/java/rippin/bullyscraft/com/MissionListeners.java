@@ -304,7 +304,7 @@ public class MissionListeners implements Listener {
             }
         }
     }
-    @EventHandler (priority = EventPriority.MONITOR)
+    @EventHandler
     public void onMove(PlayerMoveEvent event){
         if (event.getTo() != event.getFrom()){
            if (event.getTo().getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())){
