@@ -12,12 +12,15 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
 public class Utilss {
     public static final String prefix = ChatColor.GRAY + "[" + ChatColor.DARK_RED + "BullyMissions" + ChatColor.GRAY + "] ";
+    public static BukkitTask task;
     public static Location parseLoc(String string){
 
         String split[] = string.split(":");
@@ -99,5 +102,21 @@ public class Utilss {
                 Bukkit.getServer().getWorld(world).setTime(14000);
             }
         },1L, (400*20L));
+    }
+    public static void winFireworks(FactionsMissions plugin, final Mission m){
+       task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
+            int i = 0;
+            @Override
+            public void run() {
+                if (i > 6) {
+                    task.cancel();
+                }
+                List<Player> players = MissionManager.getPlayersInMissionregionObject(m, m.getWorld().getName());
+                for (Player player : players){
+                    m.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
+                }
+                i++;
+            }
+        },20L,35L);
     }
 }
