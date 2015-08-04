@@ -104,6 +104,7 @@ public class Mission {
                     getImportantEntitiesUUID().clear();
                     getImportantBarEntities().clear();
                     getMobs().clear();
+                    Utilss.winFireworks(plugin, m);
                    // removeBar(); // Remove boss bar
                 }
             }, 10L);
