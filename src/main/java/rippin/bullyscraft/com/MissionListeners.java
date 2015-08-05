@@ -31,6 +31,8 @@ public class MissionListeners implements Listener {
     private BukkitTask stompTaskID;
     private int fireworkTaskID;
     private BukkitTask stompTaskIDInside;
+    private BukkitTask launchTaskID;
+    private BukkitTask launchTaskIDInside;
     public MissionListeners(FactionsMissions plugin){
         this.plugin = plugin;
     }
@@ -323,7 +325,7 @@ public class MissionListeners implements Listener {
                     if (from.getType() == MissionType.TIME){
                         if (!event.getPlayer().hasPermission("bullymissions.admin")) {
                         event.getPlayer().sendMessage(ChatColor.RED + "You may not LEAVE this area while THIS mission is active!");
-                        event.getPlayer().getLocation().getDirection().multiply(-2);
+                        event.getPlayer().setVelocity(event.getPlayer().getLocation().getDirection().multiply(-1));
                         event.setCancelled(true);
                         }
                     }
@@ -336,7 +338,7 @@ public class MissionListeners implements Listener {
                        if (to.getStatus() != MissionStatus.ACTIVE){
                            if (!event.getPlayer().hasPermission("bullymissions.admin")) {
                            event.getPlayer().sendMessage(ChatColor.RED + "You may not enter this area while mission is not active!");
-                           event.getPlayer().getLocation().getDirection().multiply(-2);
+                           event.getPlayer().setVelocity(event.getPlayer().getLocation().getDirection().multiply(-1));
                            event.setCancelled(true);
                            }
                        }
@@ -483,54 +485,15 @@ public class MissionListeners implements Listener {
             },1L, 40L);
         }
        else if (event.getMob().getAbilities().contains("STOMP")){
-            stompAbility(event.getEntity());
+           new StompAbilityCountdown(plugin, entity).startCountdown();
+        }
+        else if (event.getMob().getAbilities().contains("LAUNCH")){
+            new LaunchAbilityCountdown(plugin, entity).startCountdown();
         }
     }
 
-    public void stompAbility(final Entity entity){
-        stompTaskID =   plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-            Entity ent = entity;
-            int i = 0;
-            int r = Utilss.randInt(8, 15);
 
-            @Override
-            public void run() {
-                if (ent != null && !ent.isDead()) {
-                    if (i >= r) {
-                        ent.setVelocity(ent.getVelocity().add(new Vector(ent.getVelocity().getX(), 1.5, ent.getVelocity().getY())));
-                        r = Utilss.randInt(8, 15);
-                        //check if ent is in ground
-                        stompTaskIDInside = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-                            Entity entInside = ent;
-                            @Override
-                            public void run() {
-                                if (entInside == null || entInside .isDead()) {
-                                    stompTaskIDInside.cancel();
-                                } else if (entInside .isOnGround()) {
-                                    //get nearby players and hurt/do w/e
-                                    List<Player> players = Utilss.getNearbyPlayers(entInside );
-                                    entInside .getWorld().playEffect(entInside .getLocation().add(0, 1.5, 0), Effect.EXPLOSION, 30, 30);
-                                    for (Player player : players) {
-                                        if (((Entity) player).isOnGround()) {
-                                            player.setVelocity(player.getVelocity().add(new Vector(player.getVelocity().getX(), 1.5, player.getVelocity().getY())));
-                                            player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 120, 2));
-                                        }
-                                    }
 
-                                    stompTaskIDInside.cancel();
-                                }
-                            }
-                        }, 5L, 5L);
-                        i = 0;
-                    }
-                } else {
-                    stompTaskID.cancel();
-                }
-
-                ++i;
-            }
-        }, 1L, 20L);
-    }
     public void iceBossMethod(Entity entity){
        List<Entity> ents = entity.getNearbyEntities(30, 12, 30);
        for (Entity ent : ents){
