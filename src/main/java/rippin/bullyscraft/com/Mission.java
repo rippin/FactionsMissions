@@ -133,8 +133,10 @@ public class Mission {
                 @Override
                 public void run() {
                     for (Player p : MissionManager.getPlayersInMissionregionObject(m, MissionManager.getMissionWorld())){
+                        if (m.getStatus() != MissionStatus.ACTIVE){
                         p.sendMessage(ChatColor.RED + "Teleporting to spawn...");
                         p.teleport(Bukkit.getWorld("world").getSpawnLocation(), PlayerTeleportEvent.TeleportCause.PLUGIN);
+                        }
                     }
                 }
             },(5*60 * 20));
