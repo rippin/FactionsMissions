@@ -41,15 +41,21 @@ public class LaunchAbilityCountdown {
             public void run() {
                 if (ent != null && !ent.isDead()) {
                     if (i >= r) {
+
                         taskInside = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
                             Entity entInside = ent;
+                            int j = 0;
                             @Override
                             public void run() {
                                 if (entInside == null || entInside .isDead()) {
                                     taskInside.cancel();
                                 } else {
-                                    ent.getWorld().playEffect(ent.getLocation(), Effect.CLOUD, 10);
+                                    if (j % 6 == 0) {
+                                    ent.getWorld().playEffect(ent.getLocation(), Effect.LAVA_POP, 10);
+                                    j = 0;
+                                    }
                                 }
+                                j++;
                             }
                         }, 1L, 3L);
 
