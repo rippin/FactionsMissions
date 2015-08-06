@@ -48,7 +48,6 @@ public class MissionListeners implements Listener {
     public void onEntityDeath(final EntityDeathEvent event){
         String uuid = event.getEntity().getUniqueId().toString();
         Mission m = MissionManager.getMobMission(uuid);
-
         if (event.getEntity().hasMetadata("minion")){
             Iterator<MinionSpawnCountdown> it = Mob.msc.listIterator();
             while (it.hasNext()) {
