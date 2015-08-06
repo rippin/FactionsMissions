@@ -128,13 +128,13 @@ public class Mission {
                     if (!MissionManager.containsMission(MissionManager.getActiveMissions(), getName())){
                         MissionManager.getQueuedMissions().add(m);
                     }
-            MissionManager.messagePlayersInMission(this, "&4&lYou have 5 minutes to leave the mission area or you will be teleported to spawn.");
+            MissionManager.messagePlayersInMission(this, Utilss.prefix + "&4&lYou have 5 minutes to leave the mission area or you will be teleported to spawn.");
             plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
                 @Override
                 public void run() {
                     for (Player p : MissionManager.getPlayersInMissionregionObject(m, MissionManager.getMissionWorld())){
                         if (m.getStatus() != MissionStatus.ACTIVE){
-                        p.sendMessage(ChatColor.RED + "Teleporting to spawn...");
+                        p.sendMessage(Utilss.prefix + ChatColor.RED + "Teleporting to spawn...");
                         p.teleport(Bukkit.getWorld("world").getSpawnLocation(), PlayerTeleportEvent.TeleportCause.PLUGIN);
                         }
                     }
