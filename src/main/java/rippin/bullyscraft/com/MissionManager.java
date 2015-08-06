@@ -170,7 +170,8 @@ public class MissionManager {
     }
     public static boolean isMissionRegionActive(Mission m){
         for (Mission a : activeMissions){
-            if (a.getMissionRegion().toString().equalsIgnoreCase(m.toString())){
+            if (a.getMainPoint().getX() == m.getMainPoint().getX() && a.getMainPoint().getY() == m.getMainPoint().getY() &&
+                a.getMainPoint().getZ() == m.getMainPoint().getZ()){
                 return true;
             }
         }
