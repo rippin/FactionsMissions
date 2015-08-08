@@ -5,6 +5,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -594,5 +595,20 @@ public class MissionListeners implements Listener {
         }
     }
 
+    @EventHandler
+    public void onPlace(BlockPlaceEvent event){
+        if(event.getBlockPlaced().getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())){
+            if (event.getBlockPlaced().getType() == Material.WOOL){
+                for (Mission m : MissionManager.getAllMissions()){
+                    if (ChatColor.stripColor(event.getPlayer().getItemInHand().getItemMeta().getDisplayName()).equalsIgnoreCase(m.getName())){
+                        m.getSpawns().add(event.getBlockPlaced().getLocation());
+                        MissionManager.setMissionSpawnsToConfig(m);
+                        event.getPlayer().sendMessage(Utilss.prefix + ChatColor.GREEN + "Spawn has been added.");
+                        event.setCancelled(true);
+                    }
+                }
+            }
+        }
+    }
 
 }
