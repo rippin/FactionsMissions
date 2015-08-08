@@ -11,11 +11,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import rippin.bullyscraft.com.Configs.Config;
 import rippin.bullyscraft.com.Configs.ConfigManager;
 import rippin.bullyscraft.com.Configs.MissionsConfig;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -74,6 +77,38 @@ public class MissionCommands implements CommandExecutor {
            else {
                 sender.sendMessage(ChatColor.RED + "No perms.");
             }
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("spawnBlock")) {
+                if (sender.isOp()) {
+                    if (args.length == 2){
+                        if (sender instanceof Player) {
+                            Player p = (Player) sender;
+                            if (MissionManager.isMission(args[1])){
+                                Mission m = MissionManager.getMission(args[1]);
+                                ItemStack item = new ItemStack(Material.WOOL);
+                                ItemMeta meta = item.getItemMeta();
+                                meta.setDisplayName(ChatColor.RED + m.getName());
+                                meta.setLore(Arrays.asList(new String[]{ChatColor.RED + "Place to add a spawn"}));
+                                item.setItemMeta(meta);
+
+                                p.getInventory().addItem(item);
+                            }
+                            else{
+                                sender.sendMessage(ChatColor.RED + " That is not a mission.");
+                            }
+                        }
+                        else {
+                            sender.sendMessage(ChatColor.RED + "Only players can run this command.");
+                        }
+                    }
+                    else {
+                        sender.sendMessage("Wrong arguments.");
+                    }
+                }
+                else {
+                    sender.sendMessage(ChatColor.RED + "No perms.");
+                }
                 return true;
             }
             else if (args[0].equalsIgnoreCase("list")){
