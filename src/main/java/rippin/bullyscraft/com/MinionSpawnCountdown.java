@@ -44,6 +44,7 @@ public class MinionSpawnCountdown {
                     }
                     task.cancel();
                     Mob.msc.remove(thisObject);
+                    return;
                 }
                     else if (minions.size() > minionEntity.size()){
 

@@ -351,7 +351,7 @@ public class MissionCommands implements CommandExecutor {
                             int y = ((Double) m.getMainPoint().getY()).intValue();
                             int z = ((Double) m.getMainPoint().getZ()).intValue();
 
-                            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', Config.getConfig().getString("BroadcastMessage")).replace("%name%", m.getName())
+                            Bukkit.broadcastMessage(Utilss.prefix + ChatColor.translateAlternateColorCodes('&', Config.getConfig().getString("BroadcastMessage")).replace("%name%", m.getName())
                                     .replace("%type%", m.getType().getValue()).replace("%coords%", " X: " + x + " Y: " + y + " Z: " + z));
                                 p.sendMessage(Utilss.prefix + "Mission " + m.getName() + " has been force started.");
                         }

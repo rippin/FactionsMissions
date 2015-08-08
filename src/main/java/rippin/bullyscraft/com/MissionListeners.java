@@ -324,8 +324,7 @@ public class MissionListeners implements Listener {
             else if (to == null && from != null){
                     if (from.getType() == MissionType.TIME){
                         if (!event.getPlayer().hasPermission("bullymissions.admin")) {
-                        event.getPlayer().sendMessage(ChatColor.RED + "You may not LEAVE this area while THIS mission is active!");
-                        event.getPlayer().setVelocity(event.getPlayer().getLocation().getDirection().multiply(-1));
+                        event.getPlayer().sendMessage(Utilss.prefix + ChatColor.RED + "You may not LEAVE this area while THIS mission is active!");
                         event.setCancelled(true);
                         }
                     }
@@ -337,7 +336,7 @@ public class MissionListeners implements Listener {
                    if (from == null && to != null){
                        if (to.getStatus() != MissionStatus.ACTIVE){
                            if (!event.getPlayer().hasPermission("bullymissions.admin")) {
-                           event.getPlayer().sendMessage(ChatColor.RED + "You may not enter this area while mission is not active!");
+                           event.getPlayer().sendMessage(Utilss.prefix + ChatColor.RED + "You may not enter this area while mission is not active!");
                            event.getPlayer().setVelocity(event.getPlayer().getLocation().getDirection().multiply(-1));
                            event.setCancelled(true);
                            }

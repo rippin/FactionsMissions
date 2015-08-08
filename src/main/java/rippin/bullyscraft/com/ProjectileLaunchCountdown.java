@@ -34,20 +34,23 @@ public class ProjectileLaunchCountdown {
             public void run() {
                 if (entity.isDead() || entity == null){
                     task.cancel();
+                    return;
                 }
+                else {
                 projectileTask(entity, proj, mobName, velocity);
+                }
             }
         },1L, (delay * 20));
     }
 
-    public void projectileTask(Entity entity, String proj, String name, double velocity){
+    public void projectileTask(final Entity entity, String proj, String name, double velocity){
 
         try {
             Class projectileClass = Class.forName("org.bukkit.entity." + proj);
             List<Entity> ents = entity.getNearbyEntities(12, 7, 12);
             for (Entity player : ents){
                 if (player instanceof Player){
-                    Location loc = entity.getLocation().add(0, 3.15, 0).clone();
+                    Location loc = entity.getLocation().add(0, 3.5, 0).clone();
                     org.bukkit.util.Vector to = player.getLocation().toVector().clone();
                     org.bukkit.util.Vector from = loc.toVector().clone();
                     org.bukkit.util.Vector vel = to.subtract(from).normalize();
