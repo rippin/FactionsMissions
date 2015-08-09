@@ -28,7 +28,6 @@ public class MissionCommands implements CommandExecutor {
         this.plugin = plugin;
     }
     @SuppressWarnings("deprecation")
-    @Override
     public boolean onCommand(CommandSender sender, Command cmd, String s, String[] args) {
         if (cmd.getName().equalsIgnoreCase("bullymission")){
             if (args.length == 0){

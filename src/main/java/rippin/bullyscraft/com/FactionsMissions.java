@@ -14,7 +14,6 @@ public class FactionsMissions extends JavaPlugin{
     public static FactionsMissions instance;
     public final Logger logger = Logger.getLogger("Minecraft");
 
-    @Override
     public void onEnable() {
     instance = this;
     ConfigManager.generateConfigs(this);
@@ -25,7 +24,6 @@ public class FactionsMissions extends JavaPlugin{
        //check if you want to paste the schcematics
 
         this.getServer().getScheduler().runTaskLater(this, new Runnable() {
-        @Override
         public void run() {
         MissionManager.revertMissionsIfCrashed();
                }
@@ -37,7 +35,6 @@ public class FactionsMissions extends JavaPlugin{
         Utilss.setNight(this, MissionManager.getMissionWorld());
     }
 
-    @Override
     public void onDisable() {
        instance = null;
        MobsManager.clearReplaceEntUUIDs();
