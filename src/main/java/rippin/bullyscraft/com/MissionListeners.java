@@ -141,7 +141,7 @@ public class MissionListeners implements Listener {
                            Bukkit.broadcastMessage(Utilss.prefix + "Players have eliminated all mobs from the " + m.getName() + " mission.");
                            if (MissionManager.pasteSchematic()) {
                                plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-                                   @Override
+                                   
                                    public void run() {
                                        finalMission.end();
                                    }
@@ -153,7 +153,7 @@ public class MissionListeners implements Listener {
                        }
                        fireworkTaskID = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
                             int i = 10;
-                            @Override
+
                             public void run() {
                                 if (i > 0) {
                                 Firework fw = (Firework) event.getEntity().getWorld().spawnEntity(event.getEntity().getLocation(), EntityType.FIREWORK);
@@ -363,7 +363,7 @@ public class MissionListeners implements Listener {
     final String world = loc.getWorld().getName();
         taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
             int i = 40;
-            @Override
+
             public void run() {
 
                 if (i > 0) {
@@ -398,7 +398,7 @@ public class MissionListeners implements Listener {
 
                cicleTaskid = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
                    int i = 0;
-                    @Override
+
                     public void run() {
                         if (i < locs.size()) {
                         Bukkit.getWorld(loc.getWorld().getName()).playEffect(locs.get(i), effect, 10);
@@ -472,7 +472,7 @@ public class MissionListeners implements Listener {
         if (event.getMob().getAbilities().contains("ICEBOSS")){
             iceBossTaskID =   plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
                 Entity ent = entity;
-                @Override
+
                 public void run() {
                     if (ent != null && !ent.isDead()){
                         iceBossMethod(ent);
@@ -517,7 +517,7 @@ public class MissionListeners implements Listener {
             FallingBlock block = (FallingBlock) event.getEntity();
             if (block.hasMetadata("ICE-BOSS")){
                 plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-                    @Override
+
                     public void run() {
                          event.getBlock().setType(Material.AIR);
                     }

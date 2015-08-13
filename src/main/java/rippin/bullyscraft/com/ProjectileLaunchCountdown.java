@@ -30,10 +30,9 @@ public class ProjectileLaunchCountdown {
 
     public void startCountdown(){
         task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-            @Override
             public void run() {
                 if (entity.isDead() || entity == null){
-                    task.cancel();
+                    getTask().cancel();
                     return;
                 }
                 else {
@@ -63,5 +62,8 @@ public class ProjectileLaunchCountdown {
         }  catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+    public BukkitTask getTask(){
+        return  task;
     }
 }

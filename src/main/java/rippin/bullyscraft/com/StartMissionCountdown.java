@@ -20,13 +20,12 @@ public class StartMissionCountdown {
     public void startCountdown(){
         final int saveDelay = delay;
         plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-            @Override
             public void run() {
                 //announce messages soon?
                 if (delay == 0 && Bukkit.getOnlinePlayers().size() > 0) {
                     if (MissionManager.getQueuedMissions().size() == 0) {
                         delay = saveDelay;
-                        //TODO Check mainpoint to prevent overlapping missions
+
                     } else {
                         Mission m = MissionManager.getRandomQueuedMission();
                         m.start();

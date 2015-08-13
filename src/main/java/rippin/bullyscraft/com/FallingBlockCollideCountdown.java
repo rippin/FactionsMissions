@@ -23,7 +23,6 @@ public class FallingBlockCollideCountdown {
     public void startCountdown(){
         blockTask =plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
             int i = 0;
-            @Override
             public void run() {
                 if (i > 50){
                     cancelTask();

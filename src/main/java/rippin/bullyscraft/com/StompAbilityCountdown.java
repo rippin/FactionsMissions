@@ -34,7 +34,6 @@ public class StompAbilityCountdown {
             int i = 0;
             int r = Utilss.randInt(8, 15);
 
-            @Override
             public void run() {
                 if (ent != null && !ent.isDead()) {
                     if (i >= r) {
@@ -43,10 +42,9 @@ public class StompAbilityCountdown {
                         //check if ent is in ground
                         taskInside = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
                             Entity entInside = ent;
-                            @Override
                             public void run() {
                                 if (entInside == null || entInside .isDead()) {
-                                    taskInside.cancel();
+                                    getInsideTask().cancel();
                                 } else if (entInside .isOnGround()) {
                                     //get nearby players and hurt/do w/e
                                     List<Player> players = Utilss.getNearbyPlayers(entInside );
@@ -58,19 +56,25 @@ public class StompAbilityCountdown {
                                         }
                                     }
 
-                                    taskInside.cancel();
+                                    getInsideTask().cancel();
                                 }
                             }
                         }, 5L, 5L);
                         i = 0;
                     }
                 } else {
-                    task.cancel();
+                    getTask().cancel();
                 }
 
                 ++i;
             }
         }, 1L, 20L);
     }
+    public BukkitTask getTask(){
+        return  task;
+    }
 
+    public BukkitTask getInsideTask(){
+        return  taskInside;
+    }
 }

@@ -37,7 +37,6 @@ public class LaunchAbilityCountdown {
             int i = 0;
             int r = Utilss.randInt(5, 10);
 
-            @Override
             public void run() {
                 if (ent != null && !ent.isDead()) {
                     if (i >= r) {
@@ -45,10 +44,9 @@ public class LaunchAbilityCountdown {
                         taskInside = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
                             Entity entInside = ent;
                             int j = 0;
-                            @Override
                             public void run() {
                                 if (entInside == null || entInside .isDead()) {
-                                    taskInside.cancel();
+                                    getInsideTask().cancel();
                                 } else {
                                     if (j % 6 == 0) {
                                     ent.getWorld().playEffect(ent.getLocation(), Effect.LAVA_POP, 10);
@@ -73,12 +71,19 @@ public class LaunchAbilityCountdown {
                         i = 0;
                     }
                 } else {
-                    task.cancel();
+                    getTask().cancel();
                 }
 
                 ++i;
             }
         }, 1L, 20L);
+    }
+    public BukkitTask getTask(){
+        return  task;
+    }
+
+    public BukkitTask getInsideTask(){
+        return  taskInside;
     }
 
 }

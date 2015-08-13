@@ -31,7 +31,7 @@ public class MinionSpawnCountdown {
 
     public void startCountdown(){
     task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-            @Override
+        
             public void run() {
                 Iterator<LivingEntity> it = minionEntity.listIterator();
                 if (entity.isDead() || entity == null){
@@ -42,7 +42,7 @@ public class MinionSpawnCountdown {
                         it.remove();
 
                     }
-                    task.cancel();
+                   getTask();
                     Mob.msc.remove(thisObject);
                     return;
                 }
@@ -60,6 +60,9 @@ public class MinionSpawnCountdown {
                    }
             }
         }, 20L, (delay*20));
+    }
+    public BukkitTask getTask(){
+        return task;
     }
     //remove minions on death...
 }
