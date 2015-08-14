@@ -28,12 +28,12 @@ public class LaunchAbilityCountdown {
     }
 
     public void startCountdown(){
-        bossLaunchAbility(entity);
+        bossLaunchAbility(getEntity());
     }
 
-    public void bossLaunchAbility(final Entity entity){
+    public void bossLaunchAbility(final Entity entt){
         task =   plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-            Entity ent = entity;
+            Entity ent = entt;
             int i = 0;
             int r = Utilss.randInt(5, 10);
 
@@ -84,6 +84,9 @@ public class LaunchAbilityCountdown {
 
     public BukkitTask getInsideTask(){
         return  taskInside;
+    }
+    public Entity getEntity(){
+        return  this.entity;
     }
 
 }

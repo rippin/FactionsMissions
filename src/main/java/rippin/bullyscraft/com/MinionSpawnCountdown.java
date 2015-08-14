@@ -2,6 +2,7 @@ package rippin.bullyscraft.com;
 
 
 import org.bukkit.Effect;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -34,7 +35,7 @@ public class MinionSpawnCountdown {
         
             public void run() {
                 Iterator<LivingEntity> it = minionEntity.listIterator();
-                if (entity.isDead() || entity == null){
+                if (getEntity().isDead() || getEntity()== null){
                 while (it.hasNext()){
                     LivingEntity livingEntity = it.next();
                         livingEntity.getWorld().playEffect(livingEntity.getLocation(), Effect.SMOKE, 5);
@@ -63,6 +64,9 @@ public class MinionSpawnCountdown {
     }
     public BukkitTask getTask(){
         return task;
+    }
+    public Entity getEntity(){
+        return  this.entity;
     }
     //remove minions on death...
 }

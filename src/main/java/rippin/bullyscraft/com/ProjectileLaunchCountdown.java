@@ -31,7 +31,7 @@ public class ProjectileLaunchCountdown {
     public void startCountdown(){
         task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
             public void run() {
-                if (entity.isDead() || entity == null){
+                if (getEntity().isDead() || getEntity() == null){
                     getTask().cancel();
                     return;
                 }
@@ -65,5 +65,8 @@ public class ProjectileLaunchCountdown {
     }
     public BukkitTask getTask(){
         return  task;
+    }
+    public Entity getEntity(){
+        return  entity;
     }
 }
