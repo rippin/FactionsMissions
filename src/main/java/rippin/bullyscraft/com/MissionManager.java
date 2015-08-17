@@ -340,7 +340,7 @@ public class MissionManager {
 
                 sender.sendMessage(ChatColor.GRAY + "Mission: " +
                         ChatColor.GREEN + m.getName() + ChatColor.GRAY + " Type: " + ChatColor.GREEN + m.getType().getValue()
-                        + ChatColor.GRAY + " Coords: " + "X " + ChatColor.GREEN + x + "Y: " + y + "Z: " + z);
+                        + ChatColor.GRAY + " Coords: " + "X " + ChatColor.GREEN + x + ChatColor.GRAY +  " Y: " + ChatColor.GREEN  + y + ChatColor.GRAY +  " Z: " + ChatColor.GREEN  + z);
             }
 
         }

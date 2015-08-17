@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import rippin.bullyscraft.com.Configs.MissionsConfig;
+import rippin.bullyscraft.com.Events.WinFireWorksCountdown;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,14 +98,13 @@ public class Mission {
             this.status = MissionStatus.ENDING;
             MissionManager.loadChunksinRegion(this);
             plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-                @Override
                 public void run() {
                     deleteEntities();
                     getCustomEntitiesUUID().clear();
                     getImportantEntitiesUUID().clear();
                     getImportantBarEntities().clear();
                     getMobs().clear();
-                    Utilss.winFireworks(plugin, m);
+                    new WinFireWorksCountdown(plugin, m).StartCountdown();
                    // removeBar(); // Remove boss bar
                 }
             }, 10L);
@@ -130,7 +130,6 @@ public class Mission {
                     }
             MissionManager.messagePlayersInMission(this, Utilss.prefix + "&4&lYou have 5 minutes to leave the mission area or you will be teleported to spawn.");
             plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-                @Override
                 public void run() {
                     for (Player p : MissionManager.getPlayersInMissionregionObject(m, MissionManager.getMissionWorld())){
                         if (m.getStatus() != MissionStatus.ACTIVE){
@@ -157,7 +156,6 @@ public class Mission {
             EditSession editSession = worldEdit.getEditSessionFactory().getEditSession(BukkitUtil.getLocalWorld(w), -1);
             cc.paste(editSession, BukkitUtil.toVector(schematicLoc), false);
             plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-                @Override
                 public void run() {
                     // spawn mobs
                     spawnCustomEntities();
@@ -517,7 +515,6 @@ public class Mission {
 
     private void runBarRepeatingTask(){
         task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-            @Override
             public void run() {
                 Iterator it = importantBarEntities.entrySet().iterator();
                 while (it.hasNext()){

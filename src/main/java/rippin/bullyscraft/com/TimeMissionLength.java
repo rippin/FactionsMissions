@@ -32,7 +32,7 @@ public class TimeMissionLength {
         final int saveDelay = delay;
 
         task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-            @Override
+
             public void run() {
                 //announce messages soon?
                 //cancel if mission is not active aka forceended
@@ -56,7 +56,7 @@ public class TimeMissionLength {
                     task.cancel();
                 }
             if (hasEntered) {
-                if (delay % 20 == 0){
+                if (delay % 35 == 0){
                     spawnMobsNearPlayers();
                     MissionManager.messagePlayersInMission(m, Utilss.prefix + " A new wave of mobs have been spawned");
                 }
@@ -95,7 +95,7 @@ public class TimeMissionLength {
         List<Player> players = MissionManager.getPlayersInMissionregionObject(this.m, this.m.getWorld().getName());
         for (Player p : players){
             for (Location loc : m.getSpawns()){
-                if (p.getLocation().toVector().distance(loc.toVector())  <= 20 ){
+                if (p.getLocation().toVector().distance(loc.toVector())  <= 15 ){
                     Random rand = new Random();
                     int x = rand.nextInt(m.getCustomEntities().size());
                     String mobName = m.getCustomEntities().get(x);

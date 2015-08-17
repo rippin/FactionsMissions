@@ -102,19 +102,5 @@ public class Utilss {
             }
         },1L, (400*20L));
     }
-    public static void winFireworks(FactionsMissions plugin, final Mission m){
-       task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-            int i = 0;
-            public void run() {
-                if (i > 6) {
-                    task.cancel();
-                }
-                List<Player> players = MissionManager.getPlayersInMissionregionObject(m, m.getWorld().getName());
-                for (Player player : players){
-                    m.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
-                }
-                i++;
-            }
-        },20L,35L);
-    }
+
 }
