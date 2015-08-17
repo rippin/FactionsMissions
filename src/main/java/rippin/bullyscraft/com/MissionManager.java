@@ -13,7 +13,6 @@ import rippin.bullyscraft.com.Configs.MissionsConfig;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 public class MissionManager {
     private static List<Mission> missions = new ArrayList<Mission>();
@@ -118,12 +117,23 @@ public class MissionManager {
     public static Mission getRandomQueuedMission(){
         Mission m;
         do {
-        int min = 0;
-        int max = (queuedMissions.size() - 1);
-        Random r = new Random();
-        int randomInt = r.nextInt((max - min) + 1) + min;
-           m = queuedMissions.get(randomInt);
-        } while (m != null && !isMissionRegionActive(m));
+            int min = 0;
+            int max = (queuedMissions.size() - 1);
+            int randomInt = Utilss.randInt(min, max);
+            m = queuedMissions.get(randomInt);
+        } while (m == null);
+
+        return  m;
+    }
+
+    public static Mission getRandomQueuedRegionMission(List<Mission> list){
+        Mission m;
+        do {
+            int min = 0;
+            int max = (list.size() - 1);
+            int randomInt = Utilss.randInt(min, max);
+            m = list.get(randomInt);
+        } while (m == null);
 
         return  m;
     }
@@ -169,6 +179,7 @@ public class MissionManager {
         return null;
     }
     public static boolean isMissionRegionActive(Mission m){
+        if (m == null) return false;
         for (Mission a : activeMissions){
             if (a.getMainPoint().getX() == m.getMainPoint().getX() && a.getMainPoint().getY() == m.getMainPoint().getY() &&
                 a.getMainPoint().getZ() == m.getMainPoint().getZ()){

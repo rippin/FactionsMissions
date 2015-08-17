@@ -5,6 +5,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import rippin.bullyscraft.com.Configs.Config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class StartMissionCountdown {
 
     private FactionsMissions plugin;
@@ -22,19 +25,31 @@ public class StartMissionCountdown {
         plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
             public void run() {
                 //announce messages soon?
-                if (delay == 0 && Bukkit.getOnlinePlayers().size() > 0) {
-                    if (MissionManager.getQueuedMissions().size() == 0) {
+                if (delay <= 0 && Bukkit.getOnlinePlayers().size() > 0) {
+                    if (MissionManager.getQueuedMissions().isEmpty()) {
                         delay = saveDelay;
 
                     } else {
-                        Mission m = MissionManager.getRandomQueuedMission();
-                        m.start();
-                        Double x = m.getSchematicLoc().getX();
-                        Double y = m.getSchematicLoc().getY();
-                        Double z = m.getSchematicLoc().getZ();
-                        Bukkit.broadcastMessage(Utilss.prefix + broadcastMessage.replace("%name%", m.getName())
-                                .replace("%type%", m.getType().getValue()).replace("%coords%", "X: " + x.intValue() + " Y: " + y.intValue()) + " Z: " + z.intValue());
-                        delay = saveDelay;
+                        List<Mission> queuedMissionRegion = new ArrayList<Mission>();
+                        for (Mission m : MissionManager.getQueuedMissions()){
+                            if (!MissionManager.isMissionRegionActive(m)){
+                                queuedMissionRegion.add(m);
+                            }
+                          }
+                        if (queuedMissionRegion.isEmpty()){
+                            delay = saveDelay;
+                        }
+                        else {
+                            Mission m = MissionManager.getRandomQueuedRegionMission(queuedMissionRegion);
+                            m.start();
+                            Double x = m.getMainPoint().getX();
+                            Double y = m.getMainPoint().getY();
+                            Double z = m.getMainPoint().getZ();
+                            Bukkit.broadcastMessage(Utilss.prefix + broadcastMessage.replace("%name%", m.getName())
+                                    .replace("%type%", m.getType().getValue()).replace("%coords%", "X: " + x.intValue() + " Y: " + y.intValue()) + " Z: " + z.intValue());
+                            delay = saveDelay;
+                        }
+
                     }
                 }
                 --delay;

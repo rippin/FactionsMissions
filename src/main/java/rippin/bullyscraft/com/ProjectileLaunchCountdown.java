@@ -36,7 +36,7 @@ public class ProjectileLaunchCountdown {
                     return;
                 }
                 else {
-                projectileTask(entity, proj, mobName, velocity);
+                projectileTask(getEntity(), getProj(), getMobName(), getVelocity());
                 }
             }
         },1L, (delay * 20));
@@ -67,6 +67,9 @@ public class ProjectileLaunchCountdown {
         return  task;
     }
     public Entity getEntity(){
-        return  entity;
+        return  this.entity;
     }
+    public String getProj() {return this.proj; }
+    public String getMobName() {return this.mobName; }
+    public double getVelocity() {return this.velocity; }
 }

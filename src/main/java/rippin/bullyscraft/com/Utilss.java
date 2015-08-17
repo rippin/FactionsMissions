@@ -97,7 +97,6 @@ public class Utilss {
     }
     public static void setNight(FactionsMissions plugin, final String world){
         plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-            @Override
             public void run() {
                 Bukkit.getServer().getWorld(world).setTime(14000);
             }
@@ -106,7 +105,6 @@ public class Utilss {
     public static void winFireworks(FactionsMissions plugin, final Mission m){
        task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
             int i = 0;
-            @Override
             public void run() {
                 if (i > 6) {
                     task.cancel();

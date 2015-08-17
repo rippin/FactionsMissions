@@ -34,7 +34,7 @@ public class MinionSpawnCountdown {
     task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
         
             public void run() {
-                Iterator<LivingEntity> it = minionEntity.listIterator();
+                Iterator<LivingEntity> it = getMinionEntity().listIterator();
                 if (getEntity().isDead() || getEntity()== null){
                 while (it.hasNext()){
                     LivingEntity livingEntity = it.next();
@@ -44,18 +44,18 @@ public class MinionSpawnCountdown {
 
                     }
                    getTask();
-                    Mob.msc.remove(thisObject);
+                    Mob.msc.remove(getThisObject());
                     return;
                 }
-                    else if (minions.size() > minionEntity.size()){
+                    else if (getMinions().size() > getMinionEntity().size()){
 
-                        int i = (minionEntity.size());
+                        int i = (getMinionEntity().size());
 
-                       while (minions.size() > minionEntity.size()){
-                          Mob m = MobsManager.getMob(minions.get(i));
-                           LivingEntity e = m.spawnMob(entity.getLocation(), null, "minion");
-                           minionEntity.add(e);
-                           alivenEntUUIDS.put(e.getUniqueId().toString(), m);
+                       while (getMinions().size() > getMinionEntity().size()){
+                          Mob m = MobsManager.getMob(getMinions().get(i));
+                           LivingEntity e = m.spawnMob(getEntity().getLocation(), null, "minion");
+                           getMinionEntity().add(e);
+                           getAlivenEntUUIDS().put(e.getUniqueId().toString(), m);
                            ++i;
                        }
                    }
@@ -63,10 +63,19 @@ public class MinionSpawnCountdown {
         }, 20L, (delay*20));
     }
     public BukkitTask getTask(){
-        return task;
+        return this.task;
     }
     public Entity getEntity(){
         return  this.entity;
     }
+    public List<String> getMinions(){
+        return  this.minions;
+    }
+    public List<LivingEntity> getMinionEntity(){
+        return this.minionEntity; }
+
+    public MinionSpawnCountdown getThisObject() { return  this.thisObject; }
+    public HashMap<String, Mob> getAlivenEntUUIDS() { return this.alivenEntUUIDS; }
+
     //remove minions on death...
 }

@@ -1,20 +1,23 @@
 package rippin.bullyscraft.com;
 
 import org.bukkit.*;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import rippin.bullyscraft.com.Configs.MissionsConfig;
@@ -41,8 +44,35 @@ public class MissionListeners implements Listener {
     public void onTeleport(PlayerTeleportEvent event){
         if (!event.getFrom().getWorld().getName().equalsIgnoreCase(event.getTo().getWorld().getName())){
             if (MissionManager.getMissionWorld().equalsIgnoreCase(event.getTo().getWorld().getName())){
-                event.getPlayer().sendMessage(MissionManager.getTeleportworldMessage());
+                event.getPlayer().sendMessage(Utilss.prefix + MissionManager.getTeleportworldMessage());
+                event.getPlayer().sendMessage(Utilss.prefix + "Active potion effects have been cleared.");
+                event.getPlayer().getActivePotionEffects().clear();
             }
+        }
+    }
+    //disable invis
+    @EventHandler
+    public void onConsume(PlayerItemConsumeEvent event){
+            ItemStack i = event.getItem();
+            if (i.getType() == Material.POTION){
+                Potion pot = Potion.fromItemStack(i);
+                if (pot.getType() == PotionType.INVISIBILITY){
+                    event.getPlayer().sendMessage(net.md_5.bungee.api.ChatColor.RED + "Invisibilty is disabled in this realm.");
+                    event.setCancelled(true);
+                }
+
+        }
+    }
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event){
+        if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                if (event.getPlayer().getItemInHand().getType() == Material.POTION){
+                    Potion pot = Potion.fromItemStack(event.getPlayer().getItemInHand());
+                    if (pot.getType() == PotionType.INVISIBILITY){
+                        event.getPlayer().sendMessage(ChatColor.RED + "Invisiblity is disabled in this realm.");
+                        event.setCancelled(true);
+                    }
+                }
         }
     }
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -322,11 +352,11 @@ public class MissionListeners implements Listener {
                }
              }
             else if (to == null && from != null){
-                    if (from.getType() == MissionType.TIME){
+
                         if (!event.getPlayer().hasPermission("bullymissions.admin")) {
                         event.getPlayer().sendMessage(Utilss.prefix + ChatColor.RED + "You may not LEAVE this area while THIS mission is active!");
                         event.setCancelled(true);
-                        }
+
                     }
                     return;
                 }
@@ -589,7 +619,7 @@ public class MissionListeners implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event){
 
-        if (MissionManager.isPlayerInActiveRegion(event.getPlayer().getLocation()) != null){
+        if (MissionManager.isPlayerInAnyMisionRegion(event.getPlayer().getLocation()) != null){
             event.getPlayer().teleport(Bukkit.getWorld(MissionManager.getMissionWorld()).getSpawnLocation());
         }
     }
