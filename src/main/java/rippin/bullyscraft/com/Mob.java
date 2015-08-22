@@ -159,9 +159,6 @@ public class Mob {
                m.getSecondFormMap().put(ent.getUniqueId().toString(), secondForm);
 
         }
-        if (proj != null){
-            new ProjectileLaunchCountdown(plugin, ent, getName(), proj, projectileDelay, projVelocity).startCountdown();
-        }
         if (!minions.isEmpty()){
             MinionSpawnCountdown c = new MinionSpawnCountdown(plugin, ent, minions, spawnMinionDelay);
             c.startCountdown();
@@ -298,6 +295,10 @@ public class Mob {
 
     public long getProjectileDelay() {
         return projectileDelay;
+    }
+
+    public double getProjectileVelocity() {
+        return  projVelocity;
     }
 
     public void setProjectileDelay(long projectileDelay) {

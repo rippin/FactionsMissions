@@ -64,6 +64,12 @@ public class LaunchAbilityCountdown {
                                 player.setVelocity(player.getVelocity().add(new Vector(0,2, 0)));
                                 player.setVelocity(player.getLocation().getDirection().multiply(-8));
                                 player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 120, 2));
+                                if (ent.getCustomName() != null) {
+                                    player.sendMessage("* You have been launched by " + ent.getCustomName());
+                                }
+                                else {
+                                    player.sendMessage("* You have been launched by a mob");
+                                }
                             }
                         }
 

@@ -49,6 +49,17 @@ public class MissionCommands implements CommandExecutor {
                 }
                 return true;
             }
+            else if (args[0].equalsIgnoreCase("clearmobs")){
+                if (sender.isOp()){
+                    if (args.length == 2){
+                        if (sender instanceof Player) {
+                            Player p = (Player) sender;
+                            Utilss.clearOldMobs(p, Integer.parseInt(args[1]));
+                        }
+
+                    }
+                }
+            }
             else if (args[0].equalsIgnoreCase("setSpawn")) {
             if (sender.isOp()) {
             if (args.length == 2){

@@ -46,7 +46,9 @@ public class MissionListeners implements Listener {
             if (MissionManager.getMissionWorld().equalsIgnoreCase(event.getTo().getWorld().getName())){
                 event.getPlayer().sendMessage(Utilss.prefix + MissionManager.getTeleportworldMessage());
                 event.getPlayer().sendMessage(Utilss.prefix + "Active potion effects have been cleared.");
-                event.getPlayer().getActivePotionEffects().clear();
+                for (PotionEffect pot : event.getPlayer().getActivePotionEffects()){
+                    event.getPlayer().removePotionEffect(pot.getType());
+                }
             }
         }
     }
@@ -513,12 +515,16 @@ public class MissionListeners implements Listener {
                 }
             },1L, 40L);
         }
-       else if (event.getMob().getAbilities().contains("STOMP")){
+       if (event.getMob().getProj() != null){
+           new ProjectileLaunchCountdown(plugin, event.getEntity(),event.getMob().getName(),event.getMob().getProj(), event.getMob().getProjectileDelay(), event.getMob().getProjectileVelocity()).startCountdown();
+       }
+        else if (event.getMob().getAbilities().contains("STOMP")){
            new StompAbilityCountdown(plugin, entity).startCountdown();
         }
         else if (event.getMob().getAbilities().contains("LAUNCH")){
             new LaunchAbilityCountdown(plugin, entity).startCountdown();
         }
+
     }
 
 

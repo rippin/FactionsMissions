@@ -13,6 +13,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -50,7 +51,6 @@ public class Utilss {
             Set<String> cmds = new HashSet<String>();
             cmds.add("/chest");
             flags.put(DefaultFlag.TNT, StateFlag.State.DENY);
-            flags.put(DefaultFlag.ALLOWED_CMDS, cmds);
             flags.put(DefaultFlag.BUILD, StateFlag.State.DENY);
             flags.put(DefaultFlag.OTHER_EXPLOSION, StateFlag.State.DENY);
             flags.put(DefaultFlag.CREEPER_EXPLOSION, StateFlag.State.DENY);
@@ -103,4 +103,15 @@ public class Utilss {
         },1L, (400*20L));
     }
 
+    public static void clearOldMobs(Player p, int radius){
+        List<Entity> entities = p.getNearbyEntities(radius, radius,radius);
+       int i = 0;
+        for (Entity ent : entities){
+            if (ent instanceof LivingEntity && !(ent instanceof Player)){
+                ((LivingEntity) ent).setHealth(0);
+                ++i;
+            }
+        }
+        p.sendMessage(ChatColor.RED + Integer.toString(i) + " mobs have been killed.");
+    }
 }

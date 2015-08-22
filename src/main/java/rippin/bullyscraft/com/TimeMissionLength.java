@@ -29,7 +29,6 @@ public class TimeMissionLength {
     }
 
     public void startCountdown(){
-        final int saveDelay = delay;
 
         task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
 
@@ -56,8 +55,8 @@ public class TimeMissionLength {
                     task.cancel();
                 }
             if (hasEntered) {
-                if (delay % 35 == 0){
-                    spawnMobsNearPlayers();
+                if (delay % 30 == 0){
+                    spawnMobsNearPlayers(m);
                     MissionManager.messagePlayersInMission(m, Utilss.prefix + " A new wave of mobs have been spawned");
                 }
                 if (delay % 40 == 0){
@@ -91,16 +90,16 @@ public class TimeMissionLength {
         }, 20L, 20L);
     }
 
-    public void spawnMobsNearPlayers(){
-        List<Player> players = MissionManager.getPlayersInMissionregionObject(this.m, this.m.getWorld().getName());
+    public void spawnMobsNearPlayers(Mission miss){
+        List<Player> players = MissionManager.getPlayersInMissionregionObject(miss, miss.getWorld().getName());
         for (Player p : players){
-            for (Location loc : m.getSpawns()){
+            for (Location loc : miss.getSpawns()){
                 if (p.getLocation().toVector().distance(loc.toVector())  <= 15 ){
                     Random rand = new Random();
-                    int x = rand.nextInt(m.getCustomEntities().size());
-                    String mobName = m.getCustomEntities().get(x);
+                    int x = rand.nextInt(miss.getCustomEntities().size());
+                    String mobName = miss.getCustomEntities().get(x);
                     Mob mob = MobsManager.getMob(mobName);
-                    mob.spawnMob(loc, m, "CustomEntity");
+                    mob.spawnMob(loc, miss, "CustomEntity");
                 }
 
             }
