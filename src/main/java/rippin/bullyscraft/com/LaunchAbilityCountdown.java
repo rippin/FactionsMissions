@@ -28,17 +28,17 @@ public class LaunchAbilityCountdown {
     }
 
     public void startCountdown(){
-        bossLaunchAbility(getEntity());
+        bossLaunchAbility();
     }
 
-    public void bossLaunchAbility(final Entity entt){
+    public void bossLaunchAbility(){
         task =   plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
-            Entity ent = entt;
+            Entity ent = getEntity();
             int i = 0;
             int r = Utilss.randInt(5, 10);
 
             public void run() {
-                if (ent != null && !ent.isDead()) {
+                if (getEntity() != null && !getEntity().isDead()) {
                     if (i >= r) {
 
                         taskInside = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
@@ -49,7 +49,7 @@ public class LaunchAbilityCountdown {
                                     getInsideTask().cancel();
                                 } else {
                                     if (j % 6 == 0) {
-                                    ent.getWorld().playEffect(ent.getLocation(), Effect.LAVA_POP, 10);
+                                    entInside.getWorld().playEffect(entInside.getLocation(), Effect.LAVA_POP, 10);
                                     j = 0;
                                     }
                                 }
@@ -58,14 +58,14 @@ public class LaunchAbilityCountdown {
                         }, 1L, 3L);
 
 
-                        List<Player> players = Utilss.getNearbyPlayers(ent);
+                        List<Player> players = Utilss.getNearbyPlayers(getEntity());
                         for (Player player : players) {
                             if (((Entity) player).isOnGround()) {
                                 player.setVelocity(player.getVelocity().add(new Vector(0,2, 0)));
                                 player.setVelocity(player.getLocation().getDirection().multiply(-8));
                                 player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 120, 2));
-                                if (ent.getCustomName() != null) {
-                                    player.sendMessage("* You have been launched by " + ent.getCustomName());
+                                if (getEntity().getCustomName() != null) {
+                                    player.sendMessage("* You have been launched by " + getEntity().getCustomName());
                                 }
                                 else {
                                     player.sendMessage("* You have been launched by a mob");
@@ -85,14 +85,13 @@ public class LaunchAbilityCountdown {
         }, 1L, 20L);
     }
     public BukkitTask getTask(){
-        return  task;
+        return  this.task;
     }
 
     public BukkitTask getInsideTask(){
-        return  taskInside;
+        return  this.taskInside;
     }
     public Entity getEntity(){
         return  this.entity;
     }
-
 }

@@ -55,7 +55,7 @@ public class TimeMissionLength {
                     task.cancel();
                 }
             if (hasEntered) {
-                if (delay % 30 == 0){
+                if (delay % 20 == 0){
                     spawnMobsNearPlayers(m);
                     MissionManager.messagePlayersInMission(m, Utilss.prefix + " A new wave of mobs have been spawned");
                 }
@@ -94,7 +94,7 @@ public class TimeMissionLength {
         List<Player> players = MissionManager.getPlayersInMissionregionObject(miss, miss.getWorld().getName());
         for (Player p : players){
             for (Location loc : miss.getSpawns()){
-                if (p.getLocation().toVector().distance(loc.toVector())  <= 15 ){
+                if (p.getLocation().toVector().distance(loc.toVector())  <= 20 ){
                     Random rand = new Random();
                     int x = rand.nextInt(miss.getCustomEntities().size());
                     String mobName = miss.getCustomEntities().get(x);

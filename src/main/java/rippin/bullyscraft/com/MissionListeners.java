@@ -1,5 +1,7 @@
 package rippin.bullyscraft.com;
 
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.*;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.*;
@@ -59,7 +61,7 @@ public class MissionListeners implements Listener {
             if (i.getType() == Material.POTION){
                 Potion pot = Potion.fromItemStack(i);
                 if (pot.getType() == PotionType.INVISIBILITY){
-                    event.getPlayer().sendMessage(net.md_5.bungee.api.ChatColor.RED + "Invisibilty is disabled in this realm.");
+                    event.getPlayer().sendMessage(ChatColor.RED + "Invisibilty is disabled in this realm.");
                     event.setCancelled(true);
                 }
 
@@ -474,7 +476,7 @@ public class MissionListeners implements Listener {
     public void onSpawn(CreatureSpawnEvent event){
         final Entity entity = event.getEntity();
        if (event.getEntity().getLocation().getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())) {
-        if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.CUSTOM || entity.hasMetadata("CustomEntity")){
+           if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.CUSTOM || entity.hasMetadata("CustomEntity")){
             if (MissionManager.getAllMissions() != null && !MissionManager.getAllMissions().isEmpty()){
                 for (Mission m : MissionManager.getAllMissions()){
                   if  (m.isLocationInMissionRegion(event.getLocation())){
@@ -488,16 +490,32 @@ public class MissionListeners implements Listener {
                     || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.DEFAULT
                     || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.NATURAL
                     || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER_EGG){
-                if (MobsManager.isEntityInReplaceMap(event.getEntityType())){
-                 Mob m =  MobsManager.getReplaceMob(event.getEntityType());
-                    m.spawnMob(event.getLocation(), null, "ReplaceEntity");
+                if (checkiFLocationInSpawnRegion(entity.getLocation())) {
                     event.setCancelled(true);
                     return;
+                }
+                if (MobsManager.isEntityInReplaceMap(event.getEntityType())){
+                        Mob m = MobsManager.getReplaceMob(event.getEntityType());
+                        m.spawnMob(event.getLocation(), null, "ReplaceEntity");
+                        event.setCancelled(true);
+                        return;
                 }
             }
         }
      }
   }
+    public boolean checkiFLocationInSpawnRegion(Location loc){
+        ApplicableRegionSet ars = plugin.getWorldGuard().
+                getRegionManager(loc.getWorld()).getApplicableRegions(loc);
+        for (ProtectedRegion pr : ars){
+            if (pr.getId().contains("spawn")){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @EventHandler
     public void onMobSpawn(MobSpawnEvent event){
         final Entity entity = event.getEntity();
