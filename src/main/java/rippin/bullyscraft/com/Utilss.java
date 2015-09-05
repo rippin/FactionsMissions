@@ -113,10 +113,7 @@ public class Utilss {
                 if (ent instanceof Player){
                     continue;
                 }
-                ((LivingEntity) ent).setHealth(1);
-               // ((LivingEntity) ent).setRemainingAir(0);
-               // ((LivingEntity) ent).addPotionEffect(new PotionEffect(PotionEffectType.HARM, 40, 2));
-               // ent.setFireTicks(60);
+                ((LivingEntity) ent).setHealth(0);
                 ++i;
             }
         }
