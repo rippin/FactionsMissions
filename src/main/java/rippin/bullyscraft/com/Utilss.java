@@ -15,6 +15,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
@@ -107,8 +109,14 @@ public class Utilss {
         List<Entity> entities = p.getNearbyEntities(radius, radius,radius);
        int i = 0;
         for (Entity ent : entities){
-            if (ent instanceof LivingEntity && !(ent instanceof Player)){
-                ((LivingEntity) ent).setHealth(0);
+            if (ent instanceof LivingEntity){
+                if (ent instanceof Player){
+                    continue;
+                }
+                ((LivingEntity) ent).setHealth(1);
+               // ((LivingEntity) ent).setRemainingAir(0);
+               // ((LivingEntity) ent).addPotionEffect(new PotionEffect(PotionEffectType.HARM, 40, 2));
+               // ent.setFireTicks(60);
                 ++i;
             }
         }
