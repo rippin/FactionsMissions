@@ -51,13 +51,6 @@
             <scope>provided</scope>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>org.primesoft</groupId>
-            <artifactId>AsyncWorldEdit</artifactId>
-            <systemPath>${project.basedir}/.idea/lib/AsyncWorldEdit.jar</systemPath>
-            <version>LATEST</version>
-            <scope>system</scope>
-        </dependency>
     </dependencies>
 
     <build>
