@@ -115,6 +115,7 @@ public class Mob {
             ent = (LivingEntity) Bukkit.getServer().getWorld(loc.getWorld().getName()).spawnEntity(loc, EntityType.CREEPER);
             ((Creeper) ent).setPowered(true); // make it charged
         }
+        /* 1.7 safe
         else if (type.toUpperCase().equalsIgnoreCase("ELDER_GUARDIAN")){
             ent = (LivingEntity) Bukkit.getServer().getWorld(loc.getWorld().getName()).spawnEntity(loc, EntityType.GUARDIAN);
             ((Guardian) ent).setElder(true);
@@ -123,7 +124,7 @@ public class Mob {
             ent = (LivingEntity) Bukkit.getServer().getWorld(loc.getWorld().getName()).spawnEntity(loc, EntityType.RABBIT);
             ((Rabbit) ent).setRabbitType(Rabbit.Type.THE_KILLER_BUNNY);
         }
-
+*/
         else if (type.toUpperCase().equalsIgnoreCase("BABY_ZOMBIE")){
             ent = (LivingEntity) Bukkit.getServer().getWorld(loc.getWorld().getName()).spawnEntity(loc, EntityType.ZOMBIE);
             ((Zombie) ent).setBaby(true);
