@@ -146,9 +146,7 @@ public class Mission {
                 System.out.println("Schematic or WorlEdit is null.");
                 return;
             }
-            if (plugin.getAsyncWorldEdit() != null) {
-                AsyncWorldEditHook.AWEHookPaste(plugin, this); // prevent dumb noclassdef exception
-            }
+
             else {
             CuboidClipboard cc = SchematicFormat.MCEDIT.load(schematic);
 
@@ -175,9 +173,6 @@ public class Mission {
             if (schematic == null || worldEdit == null){
                 System.out.println("Schematic or WorlEdit is null.");
                 return;
-            }
-            if (plugin.getAsyncWorldEdit() != null) {
-                AsyncWorldEditHook.revertHookPaste(plugin, this); // prevent dumb noclassdef exception
             }
             else {
                 CuboidClipboard cc = SchematicFormat.MCEDIT.load(schematic);
