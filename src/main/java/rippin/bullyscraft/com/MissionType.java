@@ -8,7 +8,7 @@ package rippin.bullyscraft.com;
  *
  */
 public enum MissionType {
-    RESCUE ("Rescue"), ELIMINATE ("Eliminate"), SPY ("Spy"), BOSS ("Boss"), TIME ("Time"), VILLAGER ("Villager");
+    RESCUE ("Rescue"), ELIMINATE ("Eliminate"), SPY ("Spy"), BOSS ("Boss"), MULTIBOSS ("MultiBoss"), TIME ("Time"), VILLAGER ("Villager");
     private String value;
 
    private MissionType(String value){
