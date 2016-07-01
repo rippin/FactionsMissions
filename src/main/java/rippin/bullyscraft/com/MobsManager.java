@@ -4,8 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import rippin.bullyscraft.com.Configs.MobsConfig;
 

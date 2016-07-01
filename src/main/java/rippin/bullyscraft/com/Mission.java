@@ -48,7 +48,7 @@ public class Mission {
     private Mission m;
     private World w;
     private Location mainPoint;
-
+    private List<String> multiBoss = new ArrayList<String>();
     public Mission(String name){
         this.name = name;
         plugin = FactionsMissions.instance;
@@ -526,4 +526,11 @@ public class Mission {
         return secondForm;
     }
 
+    public List<String> getMultiBoss() {
+        return multiBoss;
+    }
+
+    public void setMultiBoss(List<String> multiBoss) {
+        this.multiBoss = multiBoss;
+    }
 }

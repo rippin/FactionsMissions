@@ -58,23 +58,26 @@ public class MissionListeners implements Listener {
     @EventHandler
     public void onConsume(PlayerItemConsumeEvent event){
             ItemStack i = event.getItem();
-            if (i.getType() == Material.POTION){
+            if (i.getType() == Material.POTION) {
+                if (event.getPlayer().getLocation().getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())) {
                 Potion pot = Potion.fromItemStack(i);
-                if (pot.getType() == PotionType.INVISIBILITY){
+                if (pot.getType() == PotionType.INVISIBILITY) {
                     event.getPlayer().sendMessage(ChatColor.RED + "Invisibilty is disabled in this realm.");
                     event.setCancelled(true);
                 }
-
+            }
         }
     }
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event){
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-                if (event.getPlayer().getItemInHand().getType() == Material.POTION){
-                    Potion pot = Potion.fromItemStack(event.getPlayer().getItemInHand());
-                    if (pot.getType() == PotionType.INVISIBILITY){
-                        event.getPlayer().sendMessage(ChatColor.RED + "Invisiblity is disabled in this realm.");
-                        event.setCancelled(true);
+                if (event.getPlayer().getItemInHand().getType() == Material.POTION) {
+                    if (event.getPlayer().getLocation().getWorld().getName().equalsIgnoreCase(MissionManager.getMissionWorld())) {
+                        Potion pot = Potion.fromItemStack(event.getPlayer().getItemInHand());
+                        if (pot.getType() == PotionType.INVISIBILITY) {
+                            event.getPlayer().sendMessage(ChatColor.RED + "Invisiblity is disabled in this realm.");
+                            event.setCancelled(true);
+                        }
                     }
                 }
         }
@@ -221,6 +224,27 @@ public class MissionListeners implements Listener {
                             m.giveRewards(randPlayer.getName());
                         }
                         m.end();
+                    }
+                }
+            else if (m.getType() == MissionType.MULTIBOSS){
+                    if (m.getMultiBoss().contains(uuid)){
+                        Bukkit.broadcastMessage(ChatColor.GREEN + "One of the Bosses in mission " + m.getName() + " has been defeated, " + m.getMultiBoss().size() + " remain.");
+                    }
+                    m.getMultiBoss().remove(uuid);
+                    if (m.getMultiBoss().isEmpty()){
+                        Bukkit.broadcastMessage(ChatColor.GREEN + "The last boss in mission " + m.getName() + " has been killed.");
+                        if (event.getEntity().getKiller() instanceof Player){
+                            m.giveRewards(event.getEntity().getKiller().getName());
+                        }
+                        else{
+                            List<Player> players = MissionManager.getPlayersInMissionregionObject(m, MissionManager.getMissionWorld());
+
+                            Player randPlayer = players.get(Utilss.randInt(0, players.size() -1));
+                            MissionManager.messagePlayersInMission(m, "&4Killer not found, a random player in the region will be rewarded.");
+                            m.giveRewards(randPlayer.getName());
+                        }
+                        m.end();
+
                     }
                 }
             m.getMobs().remove(uuid); // remove UUID of mob here
